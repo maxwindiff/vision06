@@ -8,11 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		00575BE72D27A0ED00FE81DC /* RealityKitContent in Frameworks */ = {isa = PBXBuildFile; productRef = 00575BE62D27A0ED00FE81DC /* RealityKitContent */; };
+		0079662A2D2BACD0009CAA70 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 007966292D2BACD0009CAA70 /* Accelerate.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		00575BE12D27A0ED00FE81DC /* vision06.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = vision06.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		00575BE52D27A0ED00FE81DC /* RealityKitContent */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RealityKitContent; sourceTree = "<group>"; };
+		007966292D2BACD0009CAA70 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -42,6 +44,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				00575BE72D27A0ED00FE81DC /* RealityKitContent in Frameworks */,
+				0079662A2D2BACD0009CAA70 /* Accelerate.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,6 +56,7 @@
 			children = (
 				00575BE32D27A0ED00FE81DC /* vision06 */,
 				00575BE42D27A0ED00FE81DC /* Packages */,
+				007966282D2BACD0009CAA70 /* Frameworks */,
 				00575BE22D27A0ED00FE81DC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -71,6 +75,14 @@
 				00575BE52D27A0ED00FE81DC /* RealityKitContent */,
 			);
 			path = Packages;
+			sourceTree = "<group>";
+		};
+		007966282D2BACD0009CAA70 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				007966292D2BACD0009CAA70 /* Accelerate.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -162,6 +174,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"vision06/Preview Content\"";
+				DEVELOPMENT_TEAM = MFL6L88RLH;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "$(TARGET_NAME)/Info.plist";
@@ -187,6 +200,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"vision06/Preview Content\"";
+				DEVELOPMENT_TEAM = MFL6L88RLH;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "$(TARGET_NAME)/Info.plist";
