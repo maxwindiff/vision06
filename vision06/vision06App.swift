@@ -5,6 +5,10 @@ struct vision06App: App {
   @Environment(\.openImmersiveSpace) private var openImmersiveSpace
   @State private var appModel = AppModel()
 
+  init() {
+    GestureComponent.registerComponent()
+  }
+
   var body: some Scene {
     WindowGroup {
       ContentView()
