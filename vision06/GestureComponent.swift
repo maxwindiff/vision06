@@ -25,46 +25,29 @@ public struct GestureComponent: Component, Codable {
 
     guard let entity = state.targetedEntity else { fatalError("Gesture contained no entity") }
 
-    // The transform that the pivot will be moved to.
-    var targetPivotTransform = Transform()
-
     // Set the target pivot transform depending on the input source.
+    // If there is not an input device pose, use the location of the drag for positioning the pivot.
+    var targetPivotTransform = Transform()
     if let inputDevicePose = value.inputDevicePose3D {
-      // If there is an input device pose, use it for positioning and rotating the pivot.
       targetPivotTransform.scale = .one
       targetPivotTransform.translation = value.convert(inputDevicePose.position, from: .local, to: .scene)
       targetPivotTransform.rotation = value.convert(AffineTransform3D(rotation: inputDevicePose.rotation), from: .local, to: .scene).rotation
     } else {
-      // If there is not an input device pose, use the location of the drag for positioning the pivot.
       targetPivotTransform.translation = value.convert(value.location3D, from: .local, to: .scene)
     }
 
     if !state.isDragging {
-      // If this drag just started, create the pivot entity.
+      // Make the dragged entity a child of the pivot entity.
       let pivotEntity = Entity()
-
       guard let parent = entity.parent else { fatalError("Non-root entity is missing a parent.") }
-
-      // Add the pivot entity into the scene.
       parent.addChild(pivotEntity)
-
-      // Move the pivot entity to the target transform.
       pivotEntity.move(to: targetPivotTransform, relativeTo: nil)
-
-      // Add the targeted entity as a child of the pivot without changing the targeted entity's world transform.
       pivotEntity.addChild(entity, preservingWorldTransform: true)
-
-      // Store the pivot entity.
       state.pivotEntity = pivotEntity
-
-      // Indicate that a drag has started.
       state.isDragging = true
       print("Drag started, entity: \(entity.name) pivot: \(pivotEntity.name)")
-
     } else {
-      // If this drag is ongoing, move the pivot entity to the target transform.
-      // The animation duration smooths the noise in the target transform across frames.
-      state.pivotEntity?.move(to: targetPivotTransform, relativeTo: nil, duration: 0.2)
+      state.pivotEntity?.move(to: targetPivotTransform, relativeTo: nil, duration: 0.1)
     }
   }
 
@@ -72,11 +55,11 @@ public struct GestureComponent: Component, Codable {
     let state = EntityGestureState.shared
     state.isDragging = false
 
+    // Delete the pivot entity.
     if let pivotEntity = state.pivotEntity {
       pivotEntity.parent!.addChild(state.targetedEntity!, preservingWorldTransform: true)
       pivotEntity.removeFromParent()
     }
-
     state.pivotEntity = nil
     state.targetedEntity = nil
   }

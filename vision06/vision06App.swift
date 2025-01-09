@@ -17,7 +17,7 @@ struct vision06App: App {
           await openImmersiveSpace(id: appModel.immersiveSpaceID)
         }
     }
-    .defaultSize(width: 400, height: 400)
+    .defaultSize(width: 400, height: 300)
 
     ImmersiveSpace(id: appModel.immersiveSpaceID) {
       ImmersiveView()

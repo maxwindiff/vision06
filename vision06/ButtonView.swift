@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ButtonView: View {
   let size: CGFloat
+  var finger: SIMD3<Float> = .zero
   @State private var currentDateTime: String = ""
 
   private var dateFormatter: DateFormatter {
@@ -14,7 +15,7 @@ struct ButtonView: View {
     ZStack {
       Rectangle()
         .stroke(Color.white, lineWidth: 1)
-        .background(Color.clear)
+        .background(ShaderLibrary.glow(.float3(finger.x, finger.y, finger.z)))
       VStack(spacing: 0) {
         HStack(spacing: 0) {
           Text("Hululu").font(.system(size: 10, design: .monospaced))
