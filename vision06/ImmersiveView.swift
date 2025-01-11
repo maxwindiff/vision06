@@ -12,8 +12,9 @@ struct ImmersiveView: View {
   let handTracking = HandTrackingProvider()
   let headAnchor = AnchorEntity(.head)
 
-  @State var leftHand: HandSkeletonView?
-  @State var rightHand: HandSkeletonView?
+  @State var sphere: ModelEntity?  // for debugging
+  @State var buttonEntity: ViewAttachmentEntity?
+  @State var buttonProjection: SIMD3<Float> = [0, 0, 1]
 
   var dragGesture: some Gesture {
     DragGesture()
@@ -23,26 +24,26 @@ struct ImmersiveView: View {
 
   var body: some View {
     RealityView { content, attachments in
-      leftHand = HandSkeletonView(jointColor: .red, connectionColor: .red.withAlphaComponent(0.5))
-      rightHand = HandSkeletonView(jointColor: .blue, connectionColor: .blue.withAlphaComponent(0.5))
-      content.add(leftHand!)
-      content.add(rightHand!)
+      let sphere = ModelEntity(mesh: .generateSphere(radius: 0.005),
+                               materials: [SimpleMaterial(color: .yellow.withAlphaComponent(0), isMetallic: false)])
+      content.add(sphere)
+      self.sphere = sphere
 
       if let entity = attachments.entity(for: "ButtonView") {
         content.add(entity)
-        entity.look(at: [0.4, 0.8, -1], from: [0.2, 0.9, -0.5], relativeTo: nil)
-        print(entity.transform)
+        entity.look(at: [0, 1.1, -1], from: [0, 1, -0.5], relativeTo: nil)
 
         entity.components.set(GestureComponent())
         entity.components.set(InputTargetComponent())
         let size = entity.attachment.bounds.extents
         let mesh = MeshResource.generatePlane(width: size.x, height: size.y)
         entity.components.set(CollisionComponent(shapes: [ShapeResource.generateConvex(from: mesh)]))
+        buttonEntity = entity
       }
     } update: { content, attachments in
     } attachments: {
       Attachment(id: "ButtonView") {
-        ButtonView(size: 100)
+        ButtonView(size: 100, finger: buttonProjection)
       }
     }
     .task {
@@ -55,20 +56,26 @@ struct ImmersiveView: View {
     .task {
       for await update in handTracking.anchorUpdates {
         if update.event == .updated {
-          guard let deviceAnchor = worldTracking.queryDeviceAnchor(atTimestamp: CACurrentMediaTime()) else { continue }
-          updateHand(device: deviceAnchor, hand: update.anchor)
+          if update.anchor.chirality == .right {
+            let finger = Transform(matrix: update.anchor.originFromAnchorTransform *
+                                  update.anchor.handSkeleton!.joint(.indexFingerTip).anchorFromJointTransform).translation
+            if let buttonEntity {
+              // Project fingertip coordinates onto the button surface
+              buttonProjection = (buttonEntity.transform.matrix.inverse * SIMD4<Float>(finger.x, finger.y, finger.z, 1)).xyz
+              buttonProjection.x = buttonProjection.x / buttonEntity.attachment.bounds.extents.x + 0.5
+              buttonProjection.y = -buttonProjection.y  / buttonEntity.attachment.bounds.extents.y + 0.5
+            }
+          }
         }
       }
     }
     .simultaneousGesture(dragGesture)
   }
+}
 
-  func updateHand(device: DeviceAnchor, hand: HandAnchor) {
-    if hand.chirality == .left {
-      leftHand?.updateHandSkeleton(with: hand)
-    } else {
-      rightHand?.updateHandSkeleton(with: hand)
-    }
+extension SIMD4<Float> {
+  var xyz: SIMD3<Float> {
+    SIMD3(x, y, z)
   }
 }
 

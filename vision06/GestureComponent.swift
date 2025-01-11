@@ -45,7 +45,6 @@ public struct GestureComponent: Component, Codable {
       pivotEntity.addChild(entity, preservingWorldTransform: true)
       state.pivotEntity = pivotEntity
       state.isDragging = true
-      print("Drag started, entity: \(entity.name) pivot: \(pivotEntity.name)")
     } else {
       state.pivotEntity?.move(to: targetPivotTransform, relativeTo: nil, duration: 0.1)
     }
