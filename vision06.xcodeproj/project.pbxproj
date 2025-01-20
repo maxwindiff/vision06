@@ -8,13 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		00575BE72D27A0ED00FE81DC /* RealityKitContent in Frameworks */ = {isa = PBXBuildFile; productRef = 00575BE62D27A0ED00FE81DC /* RealityKitContent */; };
-		0079662A2D2BACD0009CAA70 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 007966292D2BACD0009CAA70 /* Accelerate.framework */; };
+		00AA56EB2D3E184C006159B6 /* Algorithms in Frameworks */ = {isa = PBXBuildFile; productRef = 00AA56EA2D3E184C006159B6 /* Algorithms */; };
+		00AA56EE2D3E1900006159B6 /* Collections in Frameworks */ = {isa = PBXBuildFile; productRef = 00AA56ED2D3E1900006159B6 /* Collections */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		00575BE12D27A0ED00FE81DC /* vision06.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = vision06.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		00575BE52D27A0ED00FE81DC /* RealityKitContent */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RealityKitContent; sourceTree = "<group>"; };
-		007966292D2BACD0009CAA70 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -43,8 +43,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				00AA56EB2D3E184C006159B6 /* Algorithms in Frameworks */,
 				00575BE72D27A0ED00FE81DC /* RealityKitContent in Frameworks */,
-				0079662A2D2BACD0009CAA70 /* Accelerate.framework in Frameworks */,
+				00AA56EE2D3E1900006159B6 /* Collections in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -80,7 +81,6 @@
 		007966282D2BACD0009CAA70 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				007966292D2BACD0009CAA70 /* Accelerate.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -106,6 +106,8 @@
 			name = vision06;
 			packageProductDependencies = (
 				00575BE62D27A0ED00FE81DC /* RealityKitContent */,
+				00AA56EA2D3E184C006159B6 /* Algorithms */,
+				00AA56ED2D3E1900006159B6 /* Collections */,
 			);
 			productName = vision06;
 			productReference = 00575BE12D27A0ED00FE81DC /* vision06.app */;
@@ -135,6 +137,10 @@
 			);
 			mainGroup = 00575BD82D27A0ED00FE81DC;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				00AA56E92D3E184C006159B6 /* XCRemoteSwiftPackageReference "swift-algorithms" */,
+				00AA56EC2D3E1864006159B6 /* XCRemoteSwiftPackageReference "swift-collections" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 00575BE22D27A0ED00FE81DC /* Products */;
 			projectDirPath = "";
@@ -178,15 +184,12 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "$(TARGET_NAME)/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.hululu.vision06;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = vision06/BridgingHeader.h;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 7;
 			};
@@ -204,15 +207,12 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "$(TARGET_NAME)/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.hululu.vision06;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = vision06/BridgingHeader.h;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 7;
 			};
@@ -360,10 +360,39 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		00AA56E92D3E184C006159B6 /* XCRemoteSwiftPackageReference "swift-algorithms" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-algorithms.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.0;
+			};
+		};
+		00AA56EC2D3E1864006159B6 /* XCRemoteSwiftPackageReference "swift-collections" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-collections.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.4;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		00575BE62D27A0ED00FE81DC /* RealityKitContent */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = RealityKitContent;
+		};
+		00AA56EA2D3E184C006159B6 /* Algorithms */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 00AA56E92D3E184C006159B6 /* XCRemoteSwiftPackageReference "swift-algorithms" */;
+			productName = Algorithms;
+		};
+		00AA56ED2D3E1900006159B6 /* Collections */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 00AA56EC2D3E1864006159B6 /* XCRemoteSwiftPackageReference "swift-collections" */;
+			productName = Collections;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
