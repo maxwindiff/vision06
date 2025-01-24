@@ -125,15 +125,7 @@ public struct SmoothCurveSampler {
         self.flatness = flatness
         self.extruder = extruder
     }
-    
-    /// Replaces the most recently added key point with the provided `point`.
-    mutating func replaceHeadKey(point: SIMD3<Float>) {
-        // Key point that the app is replacing with `point`.
-        _ = popKeyPoint()
-        
-        trace(point: point)
-    }
-    
+
     /// Traces a new key point onto the end of the curve, generating smooth samples as needed.
     mutating func trace(point: SIMD3<Float>) {
         if let previousPoint = popKeyPoint() {
@@ -154,9 +146,4 @@ public struct SmoothCurveSampler {
             appendCurveSample(parameter: Float(keyPoints.count - 1))
         }
     }
-//    /// Removes all key points from the currently-generated smooth curve, effectively beginning a new brush stroke.
-//    mutating func beginNewStroke() {
-//        keyPoints.removeAll(keepingCapacity: true)
-//        curve.beginNewStroke()
-//    }
 }
