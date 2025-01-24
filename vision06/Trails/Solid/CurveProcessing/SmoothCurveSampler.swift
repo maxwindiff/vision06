@@ -13,7 +13,7 @@ import Collections
 /// These smoothed curve samples are submitted to a `SolidDrawingMeshGenerator` that you provide.
 public struct SmoothCurveSampler {
     /// The mesh generator to submit smoothed samples to
-    private(set) var curve: CurveExtruder
+    private(set) var extruder: CurveExtruder
 
     /// A parameter that determines how closely the generated samples should conform to the ideal smoothed curve.
     ///
@@ -49,23 +49,23 @@ public struct SmoothCurveSampler {
     }
     
     private mutating func appendCurveSample(parameter: Float, overrideRotationFrame: simd_float3x3? = nil) {
-        if curve.samples.isEmpty {
+        if extruder.samples.isEmpty {
             precondition(approximatelyEqual(parameter, 0), "must add a point at the beginning of the curve first")
         } else {
-            precondition(parameter >= curve.samples.last!.parameter, "sample parameter should be strictly increasing")
+            precondition(parameter >= extruder.samples.last!.parameter, "sample parameter should be strictly increasing")
         }
         
         let point = samplePoint(at: parameter)
         var sample = CurveSample(point: point, parameter: parameter)
         
-        if let lastSample = curve.samples.last {
+        if let lastSample = extruder.samples.last {
           sample.curveDistance = lastSample.curveDistance + distance(lastSample.position, point)
         }
         
         if let overrideRotationFrame {
             sample.rotationFrame = overrideRotationFrame
         } else {
-            if let lastSample = curve.samples.last {
+            if let lastSample = extruder.samples.last {
                 sample.rotationFrame = overrideRotationFrame ?? lastSample.rotationFrame
             }
             
@@ -79,7 +79,7 @@ public struct SmoothCurveSampler {
             }
         }
         
-        curve.append(samples: [sample])
+        extruder.append(samples: [sample])
         
         let keyPointIndex = min(max(0, Int(parameter)), keyPoints.count - 1)
         keyPoints[keyPointIndex].sampleCount += 1
@@ -89,7 +89,7 @@ public struct SmoothCurveSampler {
         let samples: [Float] = subdivideCatmullRomSpline(spline: positionSpline, range: range, flatness: flatness)
         
         for sample in samples {
-            if let lastSample = curve.samples.last {
+            if let lastSample = extruder.samples.last {
                 let maximumAngleBetweenSamples = Float.pi / 180.0 * 30
                 let tangent = sampleTangent(at: sample)
                 
@@ -117,13 +117,13 @@ public struct SmoothCurveSampler {
     /// Pops the last key point from the curve.
     private mutating func popKeyPoint() -> SIMD3<Float>? {
         guard let lastPoint = keyPoints.popLast() else { return nil }
-        curve.removeLast(sampleCount: lastPoint.sampleCount)
+        extruder.removeLast(sampleCount: lastPoint.sampleCount)
         return lastPoint.point
     }
     
     init(flatness: Float, extruder: CurveExtruder) {
         self.flatness = flatness
-        curve = extruder
+        self.extruder = extruder
     }
     
     /// Replaces the most recently added key point with the provided `point`.
@@ -141,15 +141,15 @@ public struct SmoothCurveSampler {
         }
         keyPoints.append(KeyPoint(sampleCount: 0, point: point))
         
-        if curve.samples.isEmpty {
+        if extruder.samples.isEmpty {
             // Always sample the very beginning of the curve.
             appendCurveSample(parameter: 0)
         }
         
-        let lastSampledParameter = curve.samples.last?.parameter ?? 0
+        let lastSampledParameter = extruder.samples.last?.parameter ?? 0
         appendCurveSamples(range: lastSampledParameter...Float(keyPoints.count - 1))
 
-        if let lastSampledParameter = curve.samples.last?.parameter,
+        if let lastSampledParameter = extruder.samples.last?.parameter,
            !approximatelyEqual(lastSampledParameter, Float(keyPoints.count - 1)) {
             appendCurveSample(parameter: Float(keyPoints.count - 1))
         }
