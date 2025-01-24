@@ -12,7 +12,7 @@ import Foundation
 import simd
 
 /// Structure to perform an extrude operation on a 2D shape, along a 3D curve.
-struct CurveExtruder {
+class CurveExtruder {
     private var lowLevelMesh: LowLevelMesh?
     
     /// The shape to extrude.
@@ -53,7 +53,7 @@ struct CurveExtruder {
     /// - Returns: True if a `LowLevelMesh` was reallocated. In this case, callers must reapply the `LowLevelMesh`
     ///      to their RealityKit `MeshResource`.
     @MainActor
-    private mutating func reallocateMeshIfNeeded() throws -> Bool {
+    private func reallocateMeshIfNeeded() throws -> Bool {
         guard samples.count > sampleCapacity else {
             // No need to reallocate if `sampleCapacity` is small enough.
             return false
@@ -155,12 +155,12 @@ struct CurveExtruder {
     }
     
     /// Appends `samples` to the list of 3D curve samples used to generate the mesh.
-    mutating func append<S: Sequence>(samples: S) where S.Element == CurveSample {
+    func append<S: Sequence>(samples: S) where S.Element == CurveSample {
         self.samples.append(contentsOf: samples)
     }
     
     /// Removes samples from the end of the 3D curve which were previously added with `append`.
-    mutating func removeLast(sampleCount: Int) {
+    func removeLast(sampleCount: Int) {
         samples.removeLast(sampleCount)
         cachedSampleCount = min(cachedSampleCount, max(samples.count - 1, 0))
     }
@@ -174,7 +174,7 @@ struct CurveExtruder {
     ///     (that is, the number of samples exceeded the capacity of the previous mesh).
     ///     Returns `nil` if no new `LowLevelMesh` was allocated.
     @MainActor
-    mutating func update() throws -> LowLevelMesh? {
+    func update() throws -> LowLevelMesh? {
         let didReallocate = try reallocateMeshIfNeeded()
         
         if cachedSampleCount != samples.count, let lowLevelMesh {
@@ -205,7 +205,7 @@ struct CurveExtruder {
     }
     
     /// Internal routine to update the vertex buffer of the underlying `LowLevelMesh` to include new changes to `samples`.
-    private mutating func updateVertexBuffer(_ vertexBuffer: UnsafeMutableBufferPointer<SolidBrushVertex>) {
+    private func updateVertexBuffer(_ vertexBuffer: UnsafeMutableBufferPointer<SolidBrushVertex>) {
         guard cachedSampleCount < samples.count else { return }
         
         for sampleIndex in cachedSampleCount..<samples.count {

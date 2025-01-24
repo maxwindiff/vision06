@@ -13,8 +13,8 @@ import Collections
 /// These smoothed curve samples are submitted to a `SolidDrawingMeshGenerator` that you provide.
 public struct SmoothCurveSampler {
     /// The mesh generator to submit smoothed samples to
-    private(set) var curve: SolidDrawingMeshGenerator
-    
+    private(set) var curve: CurveExtruder
+
     /// A parameter that determines how closely the generated samples should conform to the ideal smoothed curve.
     ///
     /// Lower values of flatness will result in more samples but a smoother curve.
@@ -79,7 +79,7 @@ public struct SmoothCurveSampler {
             }
         }
         
-        curve.pushSamples(curve: [sample])
+        curve.append(samples: [sample])
         
         let keyPointIndex = min(max(0, Int(parameter)), keyPoints.count - 1)
         keyPoints[keyPointIndex].sampleCount += 1
@@ -121,9 +121,9 @@ public struct SmoothCurveSampler {
         return lastPoint.point
     }
     
-    init(flatness: Float, generator: SolidDrawingMeshGenerator) {
+    init(flatness: Float, extruder: CurveExtruder) {
         self.flatness = flatness
-        curve = generator
+        curve = extruder
     }
     
     /// Replaces the most recently added key point with the provided `point`.

@@ -8,7 +8,7 @@ A RealityKit component and system to facilitate the generation of solid brush st
 import RealityKit
 
 struct SolidBrushComponent: Component {
-    var generator: SolidDrawingMeshGenerator
+    var extruder: CurveExtruder
     var material: RealityKit.Material
 }
 
@@ -27,7 +27,7 @@ class SolidBrushSystem: System {
             //
             // If the generator returns a new `LowLevelMesh`,
             // apply it to the entity's `ModelComponent`.
-            if let newMesh = try? brushComponent.generator.update(),
+            if let newMesh = try? brushComponent.extruder.update(),
                let resource = try? MeshResource(from: newMesh) {
                 if entity.components.has(ModelComponent.self) {
                     entity.components[ModelComponent.self]!.mesh = resource

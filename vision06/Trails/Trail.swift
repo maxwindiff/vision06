@@ -4,19 +4,20 @@ import RealityKit
 
 public struct Trail {
   let rootEntity: Entity
-  var solidMeshGenerator: SolidDrawingMeshGenerator
+  var curveExtruder: CurveExtruder
   var smoothCurveSampler: SmoothCurveSampler
   var inputsOverTime: Deque<(SIMD3<Float>, TimeInterval)> = []
 
   @MainActor
   init(rootEntity: Entity) async {
-    self.rootEntity = rootEntity
+    curveExtruder = CurveExtruder(shape: makeCircle(radius: 1, segmentCount: Int(32)))
+    smoothCurveSampler = SmoothCurveSampler(flatness: 0.001, extruder: curveExtruder)
 
+    self.rootEntity = rootEntity
     let solidMeshEntity = Entity()
     rootEntity.addChild(solidMeshEntity)
-    solidMeshGenerator = SolidDrawingMeshGenerator(rootEntity: solidMeshEntity,
-                                                   material: SimpleMaterial())
-    smoothCurveSampler = SmoothCurveSampler(flatness: 0.001, generator: solidMeshGenerator)
+    solidMeshEntity.position = .zero
+    solidMeshEntity.components.set(SolidBrushComponent(extruder: curveExtruder, material: SimpleMaterial()))
   }
 
   @MainActor
