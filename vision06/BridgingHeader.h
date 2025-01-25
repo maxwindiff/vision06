@@ -1,3 +1,3 @@
 #pragma once
 
-#import "Trails/Solid/SolidBrushVertex.h"
+#import "Trails/SolidBrushVertex.h"
