@@ -108,6 +108,15 @@ func makeCircle(radius: Float, segmentCount: Int) -> [SIMD2<Float>] {
     return circle
 }
 
+func makeThinSheet() -> [SIMD2<Float>] {
+  return [
+    SIMD2<Float>(0.0000001, 1.0),
+    SIMD2<Float>(-0.0000001, 1.0),
+    SIMD2<Float>(-0.0000001, -1.0),
+    SIMD2<Float>(0.0000001, -1.0),
+  ]
+}
+
 /// Returns a uniformly random direction, in other words a random point on a sphere with radius 1.
 func randomDirection() -> SIMD3<Float> {
     // Use rejection sampling to guarantee a uniform probability over all directions.
