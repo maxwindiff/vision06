@@ -30,7 +30,7 @@ class CurveExtruder {
     private(set) var samples: [CurveSample] = []
     
     /// The number of samples in `samples` that have been meshed in `lowLevelMesh`.
-    private var cachedSampleCount: Int = 0
+    private var materializedSampleCount: Int = 0
     
     /// The number of samples for which `lowLevelMesh` has capacity.
     @MainActor
@@ -162,7 +162,7 @@ class CurveExtruder {
     /// Removes samples from the end of the 3D curve which were previously added with `append`.
     func removeLast(sampleCount: Int) {
         samples.removeLast(sampleCount)
-        cachedSampleCount = min(cachedSampleCount, max(samples.count - 1, 0))
+        materializedSampleCount = min(materializedSampleCount, max(samples.count - 1, 0))
     }
     
     /// Updates the `LowLevelMesh` which is maintained by this CurveExtruder.
@@ -177,8 +177,8 @@ class CurveExtruder {
     func update() throws -> LowLevelMesh? {
         let didReallocate = try reallocateMeshIfNeeded()
         
-        if cachedSampleCount != samples.count, let lowLevelMesh {
-            if cachedSampleCount < samples.count {
+        if materializedSampleCount != samples.count, let lowLevelMesh {
+            if materializedSampleCount < samples.count {
                 lowLevelMesh.withUnsafeMutableBytes(bufferIndex: 0) { rawBuffer in
                     let vertexBuffer = rawBuffer.bindMemory(to: SolidBrushVertex.self)
                     updateVertexBuffer(vertexBuffer)
@@ -206,9 +206,9 @@ class CurveExtruder {
     
     /// Internal routine to update the vertex buffer of the underlying `LowLevelMesh` to include new changes to `samples`.
     private func updateVertexBuffer(_ vertexBuffer: UnsafeMutableBufferPointer<SolidBrushVertex>) {
-        guard cachedSampleCount < samples.count else { return }
+        guard materializedSampleCount < samples.count else { return }
         
-        for sampleIndex in cachedSampleCount..<samples.count {
+        for sampleIndex in materializedSampleCount..<samples.count {
             let sample = samples[sampleIndex]
             let frame = sample.rotationFrame
             
@@ -216,10 +216,11 @@ class CurveExtruder {
             let nextPoint = (sampleIndex == samples.count - 1) ? sample : samples[sampleIndex + 1]
 
             let radius: Float = 0.005
-            let deltaRadius: Float = 0.0 // nextPoint.radius - previousPoint.radius
-            let deltaPosition = distance(nextPoint.point, previousPoint.point)
-            let angle = atan2f(deltaRadius, deltaPosition)
-            
+            let angle: Float = 0.0
+//            let deltaRadius: Float = nextPoint.radius - previousPoint.radius
+//            let deltaPosition = distance(nextPoint.point, previousPoint.point)
+//            let angle = atan2f(deltaRadius, deltaPosition)
+
             for shapeVertexIndex in 0..<shape.count {
                 var vertex = SolidBrushVertex()
                 
@@ -265,6 +266,6 @@ class CurveExtruder {
                 vertexBuffer[sampleIndex * shape.count + shapeVertexIndex] = vertex
             }
         }
-        cachedSampleCount = samples.count
+        materializedSampleCount = samples.count
     }
 }
