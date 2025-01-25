@@ -211,23 +211,22 @@ class CurveExtruder {
         for sampleIndex in materializedSampleCount..<samples.count {
             let sample = samples[sampleIndex]
             let frame = sample.rotationFrame
-            
-            let previousPoint = (sampleIndex == 0) ? sample : samples[sampleIndex - 1]
-            let nextPoint = (sampleIndex == samples.count - 1) ? sample : samples[sampleIndex + 1]
 
             let radius: Float = 0.005
             let angle: Float = 0.0
-//            let deltaRadius: Float = nextPoint.radius - previousPoint.radius
-//            let deltaPosition = distance(nextPoint.point, previousPoint.point)
-//            let angle = atan2f(deltaRadius, deltaPosition)
+//          let previousPoint = (sampleIndex == 0) ? sample : samples[sampleIndex - 1]
+//          let nextPoint = (sampleIndex == samples.count - 1) ? sample : samples[sampleIndex + 1]
+//          let deltaRadius: Float = nextPoint.radius - previousPoint.radius
+//          let deltaPosition = distance(nextPoint.point, previousPoint.point)
+//          let angle = atan2f(deltaRadius, deltaPosition)
 
             for shapeVertexIndex in 0..<shape.count {
                 var vertex = SolidBrushVertex()
                 
                 // Use the rotation frame of `sample` to compute the 3D position of this vertex.
                 let position2d = shape[shapeVertexIndex] * radius
-                let position3d = frame * SIMD3<Float>(position2d, 0) + sample.point
-                
+                let position3d = frame * SIMD3<Float>(position2d, 0) + sample.point.position
+
                 // To compute the 3D bitangent, take the tangent of the shape in 2D
                 // and orient with respect to the rotation frame of `sample`.
                 let nextShapeIndex = (shapeVertexIndex + 1) % shape.count

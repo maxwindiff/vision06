@@ -15,7 +15,7 @@ struct CurveSample {
     /// Point data at this sample (position, radius, and so on).
     ///
     /// This is interpolated between two `CurvePoint` items, which were passed to the `SmoothCurveSampler`.
-    var point: SIMD3<Float>
+    var point: Trail.Point
 
     /// The parameter of this sample along the Catmull-Rom spline.
     ///
@@ -31,13 +31,13 @@ struct CurveSample {
     
     /// The position of this sample point.
     var position: SIMD3<Float> {
-        get { return point }
-        set { point = newValue }
+        get { return point.position }
+        //set { point.position = newValue }
     }
     
     var tangent: SIMD3<Float> { rotationFrame.columns.2 }
     
-    init(point: SIMD3<Float>, parameter: Float = 0, rotationFrame: simd_float3x3 = .init(diagonal: .one), curveDistance: Float = 0) {
+    init(point: Trail.Point, parameter: Float = 0, rotationFrame: simd_float3x3 = .init(diagonal: .one), curveDistance: Float = 0) {
         self.point = point
         self.parameter = parameter
         self.rotationFrame = rotationFrame
@@ -45,6 +45,6 @@ struct CurveSample {
     }
     
     init() {
-      self.init(point: .zero)
+      self.init(point: Trail.Point(position: .zero, timeAdded: .zero))
     }
 }

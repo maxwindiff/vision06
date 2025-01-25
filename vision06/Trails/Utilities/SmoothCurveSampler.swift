@@ -29,18 +29,21 @@ public struct SmoothCurveSampler {
         var sampleCount: Int
         
         /// The styled curve point at this key.
-        var point: SIMD3<Float>
+        var point: Trail.Point
     }
     
     /// All of the key points which have been submitted to the `SmoothCurveSampler.`
     private var keyPoints: [KeyPoint] = []
     
     private var positionSpline: LazyMapSequence<[KeyPoint], SIMD3<Float>> {
-        keyPoints.lazy.map { $0.point }
+        keyPoints.lazy.map { $0.point.position }
     }
     
-    private func samplePoint(at parameter: Float) -> SIMD3<Float> {
-        return evaluateCatmullRomSpline(spline: positionSpline, parameter: parameter, derivative: false)
+    private func samplePoint(at parameter: Float) -> Trail.Point {
+        let timeAddedSpline = keyPoints.lazy.map { $0.point.timeAdded }
+        let position = evaluateCatmullRomSpline(spline: positionSpline, parameter: parameter, derivative: false)
+        let timeAdded = evaluateCatmullRomSpline(spline: timeAddedSpline, parameter: parameter, derivative: false)
+        return Trail.Point(position: position, timeAdded: timeAdded)
     }
     
     private func sampleTangent(at parameter: Float) -> SIMD3<Float> {
@@ -59,7 +62,7 @@ public struct SmoothCurveSampler {
         var sample = CurveSample(point: point, parameter: parameter)
         
         if let lastSample = extruder.samples.last {
-          sample.curveDistance = lastSample.curveDistance + distance(lastSample.position, point)
+          sample.curveDistance = lastSample.curveDistance + distance(lastSample.position, point.position)
         }
         
         if let overrideRotationFrame {
@@ -115,7 +118,7 @@ public struct SmoothCurveSampler {
     }
     
     /// Pops the last key point from the curve.
-    private mutating func popKeyPoint() -> SIMD3<Float>? {
+    private mutating func popKeyPoint() -> Trail.Point? {
         guard let lastPoint = keyPoints.popLast() else { return nil }
         extruder.removeLast(sampleCount: lastPoint.sampleCount)
         return lastPoint.point
@@ -127,7 +130,7 @@ public struct SmoothCurveSampler {
     }
 
     /// Traces a new key point onto the end of the curve, generating smooth samples as needed.
-    mutating func trace(point: SIMD3<Float>) {
+    mutating func trace(point: Trail.Point) {
         if let previousPoint = popKeyPoint() {
             keyPoints.append(KeyPoint(sampleCount: 0, point: previousPoint))
         }
