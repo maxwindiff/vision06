@@ -17,7 +17,7 @@ struct ImmersiveView: View {
   @State var buttonProjection: SIMD3<Float> = [0, 0, 1]
 
   let trailContent = Entity()
-  @State var trail: Trail!
+  @State var trail: Trail?
 
   var dragGesture: some Gesture {
     DragGesture()
@@ -70,7 +70,7 @@ struct ImmersiveView: View {
           if update.anchor.chirality == .right {
             let finger = Transform(matrix: update.anchor.originFromAnchorTransform *
                                    update.anchor.handSkeleton!.joint(.indexFingerTip).anchorFromJointTransform).translation
-            trail.receive(input: [finger.x, finger.y, finger.z])
+            trail?.receive(input: [finger.x, finger.y, finger.z])
 //            if let buttonEntity {
 //              // Project fingertip coordinates onto the button surface
 //              buttonProjection = (buttonEntity.transform.matrix.inverse * SIMD4<Float>(finger.x, finger.y, finger.z, 1)).xyz

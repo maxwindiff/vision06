@@ -1,6 +1,6 @@
-import Collections
 import Foundation
 import RealityKit
+import RealityKitContent
 
 public struct Trail {
   let startDate: Date
@@ -16,13 +16,20 @@ public struct Trail {
   init(rootEntity: Entity) async {
     startDate = Date.now
 
-    let curveExtruder = CurveExtruder(shape: makeCircle(radius: 1, segmentCount: Int(10)))
-    smoothCurveSampler = SmoothCurveSampler(flatness: 0.001, extruder: curveExtruder)
+    let extruder = CurveExtruder(shape: makeCircle(radius: 1, segmentCount: Int(10)))
+    smoothCurveSampler = SmoothCurveSampler(flatness: 0.001, extruder: extruder)
+
+    var material: RealityKit.Material = SimpleMaterial()
+    if let shaderMaterial = try? await ShaderGraphMaterial(named: "/Root/Material",
+                                                           from: "FluxMaterial",
+                                                           in: realityKitContentBundle) {
+      print("Loaded material")
+      material = shaderMaterial
+    }
 
     let solidMeshEntity = Entity()
     solidMeshEntity.position = .zero
-    solidMeshEntity.components
-      .set(SolidBrushComponent(extruder: curveExtruder, material: SimpleMaterial(), startDate: startDate))
+    solidMeshEntity.components.set(SolidBrushComponent(extruder: extruder, material: material, startDate: startDate))
     rootEntity.addChild(solidMeshEntity)
   }
 

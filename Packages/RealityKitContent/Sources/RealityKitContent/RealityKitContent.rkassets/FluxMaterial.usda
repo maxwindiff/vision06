@@ -1,0 +1,36 @@
+#usda 1.0
+(
+    customLayerData = {
+        string creator = "Reality Composer Pro Version 2.0 (448.60.4)"
+    }
+    defaultPrim = "Root"
+    metersPerUnit = 1
+    upAxis = "Y"
+)
+
+def Xform "Root"
+{
+    def Material "Material"
+    {
+        prepend token outputs:mtlx:surface.connect = </Root/Material/PreviewSurface.outputs:out>
+        token outputs:realitykit:vertex
+        string[] ui:nodegraph:realitykit:node:attributesShowingChildren = ["outputs:mtlx:surface"]
+        float2 ui:nodegraph:realitykit:subgraphOutputs:pos = (659.77344, 93.38672)
+        int ui:nodegraph:realitykit:subgraphOutputs:stackingOrder = 57
+
+        def Shader "PreviewSurface"
+        {
+            uniform token info:id = "ND_UsdPreviewSurface_surfaceshader"
+            color3f inputs:diffuseColor = (1, 0.10462164, 0) (
+                colorSpace = "srgb_displayp3"
+            )
+            float inputs:metallic
+            float inputs:roughness
+            token outputs:out
+            float2 ui:nodegraph:node:pos = (377.97656, 90.62109)
+            int ui:nodegraph:node:stackingOrder = 58
+            string[] ui:nodegraph:realitykit:node:attributesShowingChildren = []
+        }
+    }
+}
+
