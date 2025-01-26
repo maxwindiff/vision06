@@ -54,8 +54,8 @@ class CurveExtruder {
     ///      to their RealityKit `MeshResource`.
     @MainActor
     private func reallocateMeshIfNeeded(lastSampleIndex: Int) throws -> Bool {
-      // If more than half of the samples have faded out, just copy the most recent samples to the start of the array.
-      if let lowLevelMesh, lastSampleIndex > sampleCapacity / 2 {
+      // If more than 75% of the samples have faded out, just copy the most recent samples to the start of the array.
+      if let lowLevelMesh, Float(lastSampleIndex) / Float(sampleCapacity) > 0.75 {
         samples = Array(samples[lastSampleIndex..<samples.count])
         materializedSampleCount -= lastSampleIndex
         lowLevelMesh.withUnsafeMutableBytes(bufferIndex: 0) { buffer in
