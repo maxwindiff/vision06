@@ -53,7 +53,21 @@ class CurveExtruder {
     /// - Returns: True if a `LowLevelMesh` was reallocated. In this case, callers must reapply the `LowLevelMesh`
     ///      to their RealityKit `MeshResource`.
     @MainActor
-    private func reallocateMeshIfNeeded() throws -> Bool {
+    private func reallocateMeshIfNeeded(lastSampleIndex: Int) throws -> Bool {
+      // If more than half of the samples have faded out, just copy the most recent samples to the start of the array.
+      if let lowLevelMesh, lastSampleIndex > sampleCapacity / 2 {
+        samples = Array(samples[lastSampleIndex..<samples.count])
+        materializedSampleCount -= lastSampleIndex
+        lowLevelMesh.withUnsafeMutableBytes(bufferIndex: 0) { buffer in
+          let startVertexByte = lastSampleIndex * shape.count * MemoryLayout<SolidBrushVertex>.stride
+          let vertexBytes = samples.count * shape.count * MemoryLayout<SolidBrushVertex>.stride
+          // move `vertexBytes` bytes from `startVertexBytes` to the beginning of the buffer
+          buffer.copyMemory(from: UnsafeRawBufferPointer(start: buffer.baseAddress!.advanced(by: startVertexByte), count: vertexBytes))
+        }
+        print("compacting happened, lastSampleIndex = \(lastSampleIndex), capacity = \(sampleCapacity), newSamples = \(samples.count)")
+        return false
+      }
+
         guard samples.count > sampleCapacity else {
             // No need to reallocate if `sampleCapacity` is small enough.
             return false
@@ -174,9 +188,11 @@ class CurveExtruder {
     ///     (that is, the number of samples exceeded the capacity of the previous mesh).
     ///     Returns `nil` if no new `LowLevelMesh` was allocated.
     @MainActor
-    func update() throws -> LowLevelMesh? {
-        let didReallocate = try reallocateMeshIfNeeded()
-        
+    func update(elapsed: Float) throws -> LowLevelMesh? {
+        var startSample = samples.firstIndex { elapsed - $0.point.timeAdded < 1.0 } ?? 0
+        let didReallocate = try reallocateMeshIfNeeded(lastSampleIndex: startSample)
+        startSample = samples.firstIndex { elapsed - $0.point.timeAdded < 1.0 } ?? 0
+
         if materializedSampleCount != samples.count, let lowLevelMesh {
             if materializedSampleCount < samples.count {
                 lowLevelMesh.withUnsafeMutableBytes(bufferIndex: 0) { rawBuffer in
@@ -187,12 +203,12 @@ class CurveExtruder {
             
             lowLevelMesh.parts.removeAll()
             if samples.count > 1 {
-                let triangleFanCount = samples.count - 1
-                
+                let triangleFanCount = samples.count - 1 - startSample
+
                 // Use the bounding box to occlude parts of your mesh when it isn't visible.
                 // The drawing app should display all brush strokes, so use an arbitrarily large bounds.
                 let bounds = BoundingBox(min: [-100, -100, -100], max: [100, 100, 100])
-                let part = LowLevelMesh.Part(indexOffset: 0,
+                let part = LowLevelMesh.Part(indexOffset: startSample * topology.count * MemoryLayout<UInt32>.stride,
                                              indexCount: triangleFanCount * topology.count,
                                              topology: .triangleStrip,
                                              materialIndex: 0,
@@ -214,11 +230,6 @@ class CurveExtruder {
 
             let radius: Float = 0.005
             let angle: Float = 0.0
-//          let previousPoint = (sampleIndex == 0) ? sample : samples[sampleIndex - 1]
-//          let nextPoint = (sampleIndex == samples.count - 1) ? sample : samples[sampleIndex + 1]
-//          let deltaRadius: Float = nextPoint.radius - previousPoint.radius
-//          let deltaPosition = distance(nextPoint.point, previousPoint.point)
-//          let angle = atan2f(deltaRadius, deltaPosition)
 
             for shapeVertexIndex in 0..<shape.count {
                 var vertex = SolidBrushVertex()

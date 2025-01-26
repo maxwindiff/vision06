@@ -3,6 +3,8 @@ import Foundation
 import RealityKit
 
 public struct Trail {
+  let startDate: Date
+  var lastPoint: SIMD3<Float> = .zero
   var smoothCurveSampler: SmoothCurveSampler
 
   public struct Point {
@@ -12,17 +14,26 @@ public struct Trail {
 
   @MainActor
   init(rootEntity: Entity) async {
-    let curveExtruder = CurveExtruder(shape: makeCircle(radius: 1, segmentCount: Int(32)))
+    startDate = Date.now
+
+    let curveExtruder = CurveExtruder(shape: makeCircle(radius: 1, segmentCount: Int(10)))
     smoothCurveSampler = SmoothCurveSampler(flatness: 0.001, extruder: curveExtruder)
 
     let solidMeshEntity = Entity()
-    rootEntity.addChild(solidMeshEntity)
     solidMeshEntity.position = .zero
-    solidMeshEntity.components.set(SolidBrushComponent(extruder: curveExtruder, material: SimpleMaterial()))
+    solidMeshEntity.components
+      .set(SolidBrushComponent(extruder: curveExtruder, material: SimpleMaterial(), startDate: startDate))
+    rootEntity.addChild(solidMeshEntity)
   }
 
   @MainActor
-  mutating func receive(input: SIMD3<Float>, time: TimeInterval) {
-    smoothCurveSampler.trace(point: Point(position: input, timeAdded: Float(time)))
+  mutating func receive(input: SIMD3<Float>) {
+    if distance(lastPoint, input) < 0.001 {
+      return
+    }
+    lastPoint = input
+
+    let timeAdded = Float(Date.now.timeIntervalSince(startDate))
+    smoothCurveSampler.trace(point: Point(position: input, timeAdded: timeAdded))
   }
 }

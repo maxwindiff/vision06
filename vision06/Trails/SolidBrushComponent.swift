@@ -10,6 +10,7 @@ import RealityKit
 struct SolidBrushComponent: Component {
     var extruder: CurveExtruder
     var material: RealityKit.Material
+    var startDate: Date
 }
 
 class SolidBrushSystem: System {
@@ -27,7 +28,8 @@ class SolidBrushSystem: System {
             //
             // If the generator returns a new `LowLevelMesh`,
             // apply it to the entity's `ModelComponent`.
-            if let newMesh = try? brushComponent.extruder.update(),
+            let elapsed = Float(Date.now.timeIntervalSince(brushComponent.startDate))
+            if let newMesh = try? brushComponent.extruder.update(elapsed: elapsed),
                let resource = try? MeshResource(from: newMesh) {
                 if entity.components.has(ModelComponent.self) {
                     entity.components[ModelComponent.self]!.mesh = resource
