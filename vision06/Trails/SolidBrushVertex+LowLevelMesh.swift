@@ -22,11 +22,11 @@ extension SolidBrushVertex {
       Attribute(semantic: .bitangent, format: .float3, layoutIndex: 0,
                 offset: MemoryLayout.offset(of: \Self.bitangent)!),
 
-      Attribute(semantic: .color, format: .half3, layoutIndex: 0,
-                offset: MemoryLayout.offset(of: \Self.color)!),
-
       Attribute(semantic: .uv1, format: .float, layoutIndex: 0,
                 offset: MemoryLayout.offset(of: \Self.curveDistance)!),
+
+      Attribute(semantic: .uv2, format: .float2, layoutIndex: 0,
+                offset: MemoryLayout.offset(of: \Self.timeline)!),
     ]
   }
 }

@@ -21,7 +21,7 @@ struct SolidBrushVertex {
   packed_float3 normal;
   packed_float3 bitangent;
   float curveDistance;
-  packed_half3 color;
+  packed_float2 timeline; // X = added time, Y = current time
 };
 #pragma pack(pop)
 

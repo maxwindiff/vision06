@@ -217,6 +217,18 @@ class CurveExtruder {
       }
     }
 
+    // Update timeline of all vertices
+    if let lowLevelMesh {
+      lowLevelMesh.withUnsafeMutableBytes(bufferIndex: 0) { buffer in
+        let vertexBuffer = buffer.bindMemory(to: SolidBrushVertex.self)
+        for i in startSample..<samples.count {
+          for j in 0..<shape.count {
+            vertexBuffer[i * shape.count + j].timeline.y = elapsed
+          }
+        }
+      }
+    }
+
     return didReallocate ? lowLevelMesh : nil
   }
 
@@ -264,7 +276,7 @@ class CurveExtruder {
         vertex.position = position3d.packed3
         vertex.bitangent = bitangent3d.packed3
         vertex.normal = normal3d.packed3
-        vertex.color = SIMD3<Float16>(0.5, 0.6, 0.7).packed3
+        vertex.timeline = SIMD2<Float>(sample.point.timeAdded, 0)
         vertex.curveDistance = sample.curveDistance
 
         // Verify: This mesh generator should never output NaN.
