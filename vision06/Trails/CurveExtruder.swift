@@ -64,7 +64,6 @@ class CurveExtruder {
         // move `vertexBytes` bytes from `startVertexBytes` to the beginning of the buffer
         buffer.copyMemory(from: UnsafeRawBufferPointer(start: buffer.baseAddress!.advanced(by: startVertexByte), count: vertexBytes))
       }
-      print("compacting happened, lastSampleIndex = \(lastSampleIndex), capacity = \(sampleCapacity), newSamples = \(samples.count)")
       return false
     }
 

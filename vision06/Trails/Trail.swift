@@ -23,7 +23,6 @@ public struct Trail {
     if let shaderMaterial = try? await ShaderGraphMaterial(named: "/Root/Material",
                                                            from: "FluxMaterial",
                                                            in: realityKitContentBundle) {
-      print("Loaded material")
       material = shaderMaterial
     }
 
