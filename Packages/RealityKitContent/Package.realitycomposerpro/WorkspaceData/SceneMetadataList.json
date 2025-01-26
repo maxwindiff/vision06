@@ -11,6 +11,27 @@
       }
     ]
   },
+  "622485A0-8BB8-4A31-8BFF-ADF0A265F66D" : {
+    "objectMetadataList" : [
+      [
+        "622485A0-8BB8-4A31-8BFF-ADF0A265F66D",
+        "Root",
+        "Material"
+      ],
+      {
+        "isExpanded" : true,
+        "isLocked" : false
+      },
+      [
+        "622485A0-8BB8-4A31-8BFF-ADF0A265F66D",
+        "Root"
+      ],
+      {
+        "isExpanded" : true,
+        "isLocked" : false
+      }
+    ]
+  },
   "65F6F990-A780-4474-B78B-572E0E4E273D" : {
     "objectMetadataList" : [
       [

@@ -228,7 +228,7 @@ class CurveExtruder {
       let sample = samples[sampleIndex]
       let frame = sample.rotationFrame
 
-      let radius: Float = 0.005
+      let radius: Float = 0.001
       let angle: Float = 0.0
 
       for shapeVertexIndex in 0..<shape.count {
@@ -265,7 +265,6 @@ class CurveExtruder {
         vertex.bitangent = bitangent3d.packed3
         vertex.normal = normal3d.packed3
         vertex.color = SIMD3<Float16>(0.5, 0.6, 0.7).packed3
-        vertex.materialProperties = SIMD2<Float>(0.5, 0.5)
         vertex.curveDistance = sample.curveDistance
 
         // Verify: This mesh generator should never output NaN.

@@ -27,9 +27,6 @@ extension SolidBrushVertex {
 
       Attribute(semantic: .uv1, format: .float, layoutIndex: 0,
                 offset: MemoryLayout.offset(of: \Self.curveDistance)!),
-
-      Attribute(semantic: .uv3, format: .float2, layoutIndex: 0,
-                offset: MemoryLayout.offset(of: \Self.materialProperties)!)
     ]
   }
 }

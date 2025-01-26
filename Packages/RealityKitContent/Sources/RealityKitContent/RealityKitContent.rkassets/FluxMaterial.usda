@@ -12,24 +12,76 @@ def Xform "Root"
 {
     def Material "Material"
     {
-        prepend token outputs:mtlx:surface.connect = </Root/Material/PreviewSurface.outputs:out>
+        token outputs:mtlx:surface.connect = </Root/Material/UnlitSurface.outputs:out>
         token outputs:realitykit:vertex
         string[] ui:nodegraph:realitykit:node:attributesShowingChildren = ["outputs:mtlx:surface"]
-        float2 ui:nodegraph:realitykit:subgraphOutputs:pos = (659.77344, 93.38672)
-        int ui:nodegraph:realitykit:subgraphOutputs:stackingOrder = 57
+        float2 ui:nodegraph:realitykit:subgraphOutputs:pos = (855.6133, 99.21094)
+        int ui:nodegraph:realitykit:subgraphOutputs:stackingOrder = 284
 
-        def Shader "PreviewSurface"
+        def Shader "HSVToRGB"
         {
-            uniform token info:id = "ND_UsdPreviewSurface_surfaceshader"
-            color3f inputs:diffuseColor = (1, 0.10462164, 0) (
+            uniform token info:id = "ND_hsvtorgb_color3"
+            color3f inputs:in.connect = </Root/Material/Combine3.outputs:out>
+            color3f outputs:out
+            float2 ui:nodegraph:node:pos = (199.5664, 115.75781)
+            int ui:nodegraph:node:stackingOrder = 282
+        }
+
+        def Shader "Combine3"
+        {
+            uniform token info:id = "ND_combine3_color3"
+            float inputs:in1.connect = </Root/Material/Separate2.outputs:outx>
+            float inputs:in2 = 0.8
+            float inputs:in3 = 0.4
+            color3f outputs:out
+            float2 ui:nodegraph:node:pos = (1.7890625, 117.96484)
+            int ui:nodegraph:node:stackingOrder = 270
+        }
+
+        def Shader "GeometricProperty"
+        {
+            uniform token info:id = "ND_geompropvalue_vector2"
+            string inputs:geomprop = "UV1"
+            float2 outputs:out
+            float2 ui:nodegraph:node:pos = (-451.76172, 111.76953)
+            int ui:nodegraph:node:stackingOrder = 267
+        }
+
+        def Shader "Separate2"
+        {
+            uniform token info:id = "ND_separate2_vector2"
+            float2 inputs:in.connect = </Root/Material/GeometricProperty.outputs:out>
+            float outputs:outx
+            float outputs:outy
+            float2 ui:nodegraph:node:pos = (-214.72266, 110.30078)
+            int ui:nodegraph:node:stackingOrder = 265
+        }
+
+        def Shader "UnlitSurface"
+        {
+            uniform token info:id = "ND_realitykit_unlit_surfaceshader"
+            bool inputs:applyPostProcessToneMap
+            color3f inputs:color = (0, 0.10115683, 1) (
                 colorSpace = "srgb_displayp3"
             )
-            float inputs:metallic
-            float inputs:roughness
+            color3f inputs:color.connect = </Root/Material/Multiply.outputs:out>
+            bool inputs:hasPremultipliedAlpha = 1
+            float inputs:opacity = 0
+            float inputs:opacityThreshold
             token outputs:out
-            float2 ui:nodegraph:node:pos = (377.97656, 90.62109)
-            int ui:nodegraph:node:stackingOrder = 58
-            string[] ui:nodegraph:realitykit:node:attributesShowingChildren = []
+            float2 ui:nodegraph:node:pos = (606.15625, 137.26172)
+            int ui:nodegraph:node:stackingOrder = 292
+            string[] ui:nodegraph:realitykit:node:attributesShowingChildren = ["outputs:out"]
+        }
+
+        def Shader "Multiply"
+        {
+            uniform token info:id = "ND_multiply_color3FA"
+            prepend color3f inputs:in1.connect = </Root/Material/HSVToRGB.outputs:out>
+            float inputs:in2 = 1
+            color3f outputs:out
+            float2 ui:nodegraph:node:pos = (390.41406, 120.91797)
+            int ui:nodegraph:node:stackingOrder = 294
         }
     }
 }

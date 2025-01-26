@@ -5,12 +5,38 @@
     "FluxMaterial.usda"
   ],
   "recentIdentifiers" : {
+    "622485A0-8BB8-4A31-8BFF-ADF0A265F66D" : [
+
+    ],
     "F0A7AE5D-9C02-4F85-A36A-DE6F79B0EDCD" : [
 
     ]
   },
   "sceneCameraHistory" : {
-
+    "622485A0-8BB8-4A31-8BFF-ADF0A265F66D" : [
+      {
+        "date" : 759548240.863901,
+        "title" : "Untitled",
+        "transform" : [
+          1,
+          0,
+          -0,
+          0,
+          -0,
+          0.7071069,
+          -0.7071067,
+          0,
+          0,
+          0.7071067,
+          0.7071069,
+          0,
+          -1.1920929e-07,
+          0.11532223,
+          0.11532223,
+          1
+        ]
+      }
+    ]
   },
   "sceneViewportBackgroundColors" : {
 
