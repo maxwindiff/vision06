@@ -35,7 +35,7 @@ public struct Trail {
 
   @MainActor
   mutating func receive(input: SIMD3<Float>) {
-    if distance(lastPoint, input) < 0.001 {
+    if distance(lastPoint, input) < 0.0001 {
       return
     }
     lastPoint = input
