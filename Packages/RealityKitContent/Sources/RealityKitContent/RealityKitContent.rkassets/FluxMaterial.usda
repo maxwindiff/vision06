@@ -32,11 +32,11 @@ def Xform "Root"
             uniform token info:id = "ND_combine3_color3"
             float inputs:in1 = 0.22
             float inputs:in1.connect = </Root/Material/Subtract_1.outputs:out>
-            float inputs:in2 = 0.5
+            float inputs:in2 = 0.6
             float inputs:in3 = 0.8
             color3f outputs:out
             float2 ui:nodegraph:node:pos = (-83.40625, 207.88672)
-            int ui:nodegraph:node:stackingOrder = 415
+            int ui:nodegraph:node:stackingOrder = 417
             string[] ui:nodegraph:realitykit:node:attributesShowingChildren = []
         }
 

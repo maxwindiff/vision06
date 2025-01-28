@@ -19,6 +19,7 @@ class CurveExtruder {
   ///
   /// Assumed to be centered about the origin.
   let shape: [SIMD2<Float>]
+  let radius: Float
 
   /// Topology of each triangle strip in the extruded solid.
   ///
@@ -139,8 +140,9 @@ class CurveExtruder {
   ///
   /// - Parameters:
   ///   - shape: The 2D shape to sweep along the curve.
-  init(shape: [SIMD2<Float>]) {
+  init(shape: [SIMD2<Float>], radius: Float) {
     self.shape = shape
+    self.radius = radius
 
     // Compute topology //
     // Triangle fan lists each vertex in `shape` once for each ring, except for vertex `0` of `shape` which
@@ -239,9 +241,6 @@ class CurveExtruder {
       let sample = samples[sampleIndex]
       let frame = sample.rotationFrame
 
-      let radius: Float = 0.001
-      let angle: Float = 0.0
-
       for shapeVertexIndex in 0..<shape.count {
         var vertex = SolidBrushVertex()
 
@@ -255,21 +254,7 @@ class CurveExtruder {
         let prevShapeIndex = (shapeVertexIndex + shape.count - 1) % shape.count
         let bitangent2d = simd_normalize(shape[nextShapeIndex] - shape[prevShapeIndex])
         let bitangent3d = frame * SIMD3<Float>(bitangent2d, 0)
-
-        // The normal is bent depending on the change in radius between adjacent samples:
-        // - If the change in radius is zero, then the normal is perpendicular
-        //   to `sample.tangent` and also perpendicular to `bitangent3d`.
-        //   `frameNormal` is this value.
-        // - As the change in radius approaches infinity, the normal approaches `sample.tangent`.
-        //
-        // These two extremes are blended based on the angle between the two radii (`angle`).
-        // The first case above is when the angle is 0, the second case is when the angle is pi/2.
-        let frameNormal = frame * SIMD3<Float>(bitangent2d.y, -bitangent2d.x, 0)
-        let frameNormalToTangent = simd_quatf(from: frameNormal, to: sample.tangent)
-        let frameNormalToNormal3d = simd_slerp(simd_quatf(ix: 0, iy: 0, iz: 0, r: 1),
-                                               frameNormalToTangent,
-                                               -angle / (Float.pi / 2))
-        let normal3d = frameNormalToNormal3d.act(frameNormal)
+        let normal3d = frame * SIMD3<Float>(bitangent2d.y, -bitangent2d.x, 0)
 
         // Assign vertex attributes based on the values computed above.
         vertex.position = position3d.packed3

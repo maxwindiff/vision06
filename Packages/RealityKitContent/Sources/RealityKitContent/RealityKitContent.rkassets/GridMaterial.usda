@@ -7,10 +7,10 @@
 
 def Xform "Root"
 {
-    def Material "GridMaterial"
+    def Material "Material"
     {
         reorder nameChildren = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "DefaultSurfaceShader", "MaterialXPreviewSurface", "Texcoord", "Add", "Multiply", "Fractional", "LineCounts", "Multiply_1", "Separate2", "Separate2_1", "Ifgreater", "Ifgreater_1", "Max", "Background_Color"]
-        token outputs:mtlx:surface.connect = </Root/GridMaterial/MaterialXPreviewSurface.outputs:out>
+        token outputs:mtlx:surface.connect = </Root/Material/MaterialXPreviewSurface.outputs:out>
         token outputs:realitykit:vertex
         token outputs:surface
         float2 ui:nodegraph:realitykit:subgraphOutputs:pos = (2222, 300.5)
@@ -30,7 +30,7 @@ def Xform "Root"
             uniform token info:id = "ND_UsdPreviewSurface_surfaceshader"
             float inputs:clearcoat
             float inputs:clearcoatRoughness
-            color3f inputs:diffuseColor.connect = </Root/GridMaterial/Remap.outputs:out>
+            color3f inputs:diffuseColor.connect = </Root/Material/Remap.outputs:out>
             color3f inputs:emissiveColor
             float inputs:ior
             float inputs:metallic = 0.15
@@ -58,9 +58,9 @@ def Xform "Root"
         def Shader "Multiply"
         {
             uniform token info:id = "ND_multiply_vector2"
-            float2 inputs:in1.connect = </Root/GridMaterial/Texcoord.outputs:out>
+            float2 inputs:in1.connect = </Root/Material/Texcoord.outputs:out>
             float2 inputs:in2 = (32, 15)
-            float2 inputs:in2.connect = </Root/GridMaterial/LineCounts.outputs:out>
+            float2 inputs:in2.connect = </Root/Material/LineCounts.outputs:out>
             float2 outputs:out
             float2 ui:nodegraph:node:pos = (275.64453, 47.29297)
             float2 ui:nodegraph:node:size = (61, 36)
@@ -71,7 +71,7 @@ def Xform "Root"
         def Shader "Fractional"
         {
             uniform token info:id = "ND_realitykit_fractional_vector2"
-            float2 inputs:in.connect = </Root/GridMaterial/Multiply.outputs:out>
+            float2 inputs:in.connect = </Root/Material/Multiply.outputs:out>
             float2 outputs:out
             float2 ui:nodegraph:node:pos = (440.5, 49.5)
             float2 ui:nodegraph:node:size = (155, 99)
@@ -129,11 +129,11 @@ def Xform "Root"
         def Shader "Remap"
         {
             uniform token info:id = "ND_remap_color3"
-            color3f inputs:in.connect = </Root/GridMaterial/Combine3.outputs:out>
+            color3f inputs:in.connect = </Root/Material/Combine3.outputs:out>
             color3f inputs:inhigh.connect = None
             color3f inputs:inlow.connect = None
-            color3f inputs:outhigh.connect = </Root/GridMaterial/BaseColor.outputs:out>
-            color3f inputs:outlow.connect = </Root/GridMaterial/LineColor.outputs:out>
+            color3f inputs:outhigh.connect = </Root/Material/BaseColor.outputs:out>
+            color3f inputs:outlow.connect = </Root/Material/LineColor.outputs:out>
             color3f outputs:out
             float2 ui:nodegraph:node:pos = (1755.5, 300.5)
             float2 ui:nodegraph:node:size = (95, 171)
@@ -144,7 +144,7 @@ def Xform "Root"
         def Shader "Separate2"
         {
             uniform token info:id = "ND_separate2_vector2"
-            float2 inputs:in.connect = </Root/GridMaterial/Range.outputs:out>
+            float2 inputs:in.connect = </Root/Material/Range.outputs:out>
             float outputs:outx
             float outputs:outy
             float2 ui:nodegraph:node:pos = (1212.6445, 128.91797)
@@ -155,9 +155,9 @@ def Xform "Root"
         def Shader "Combine3"
         {
             uniform token info:id = "ND_combine3_color3"
-            float inputs:in1.connect = </Root/GridMaterial/Min.outputs:out>
-            float inputs:in2.connect = </Root/GridMaterial/Min.outputs:out>
-            float inputs:in3.connect = </Root/GridMaterial/Min.outputs:out>
+            float inputs:in1.connect = </Root/Material/Min.outputs:out>
+            float inputs:in2.connect = </Root/Material/Min.outputs:out>
+            float inputs:in3.connect = </Root/Material/Min.outputs:out>
             color3f outputs:out
             float2 ui:nodegraph:node:pos = (1578.1445, 128.91797)
             float2 ui:nodegraph:node:size = (146, 54)
@@ -169,8 +169,8 @@ def Xform "Root"
             uniform token info:id = "ND_range_vector2"
             bool inputs:doclamp = 1
             float2 inputs:gamma = (2, 2)
-            float2 inputs:in.connect = </Root/GridMaterial/Absval.outputs:out>
-            float2 inputs:inhigh.connect = </Root/GridMaterial/LineWidths.outputs:out>
+            float2 inputs:in.connect = </Root/Material/Absval.outputs:out>
+            float2 inputs:inhigh.connect = </Root/Material/LineWidths.outputs:out>
             float2 inputs:inlow = (0.02, 0.02)
             float2 inputs:outhigh
             float2 inputs:outlow
@@ -183,8 +183,8 @@ def Xform "Root"
         def Shader "Subtract"
         {
             uniform token info:id = "ND_subtract_vector2"
-            float2 inputs:in1.connect = </Root/GridMaterial/Fractional.outputs:out>
-            float2 inputs:in2.connect = </Root/GridMaterial/LineWidths.outputs:out>
+            float2 inputs:in1.connect = </Root/Material/Fractional.outputs:out>
+            float2 inputs:in2.connect = </Root/Material/LineWidths.outputs:out>
             float2 outputs:out
             float2 ui:nodegraph:node:pos = (612.64453, 87.04297)
             float2 ui:nodegraph:node:size = (63, 36)
@@ -194,7 +194,7 @@ def Xform "Root"
         def Shader "Absval"
         {
             uniform token info:id = "ND_absval_vector2"
-            float2 inputs:in.connect = </Root/GridMaterial/Subtract.outputs:out>
+            float2 inputs:in.connect = </Root/Material/Subtract.outputs:out>
             float2 outputs:out
             float2 ui:nodegraph:node:pos = (765.64453, 87.04297)
             float2 ui:nodegraph:node:size = (123, 43)
@@ -204,8 +204,8 @@ def Xform "Root"
         def Shader "Min"
         {
             uniform token info:id = "ND_min_float"
-            float inputs:in1.connect = </Root/GridMaterial/Separate2.outputs:outx>
-            float inputs:in2.connect = </Root/GridMaterial/Separate2.outputs:outy>
+            float inputs:in1.connect = </Root/Material/Separate2.outputs:outx>
+            float inputs:in2.connect = </Root/Material/Separate2.outputs:outy>
             float outputs:out
             float2 ui:nodegraph:node:pos = (1388.1445, 128.91797)
             float2 ui:nodegraph:node:size = (114, 36)

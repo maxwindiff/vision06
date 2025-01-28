@@ -16,7 +16,7 @@ public struct Trail {
   init(rootEntity: Entity) async {
     startDate = Date.now
 
-    let extruder = CurveExtruder(shape: makeCircle(radius: 1, segmentCount: Int(10)))
+    let extruder = CurveExtruder(shape: makeCircle(radius: 1, segmentCount: Int(8)), radius: 0.001)
     smoothCurveSampler = SmoothCurveSampler(flatness: 0.001, extruder: extruder)
 
     var material: RealityKit.Material = SimpleMaterial()
