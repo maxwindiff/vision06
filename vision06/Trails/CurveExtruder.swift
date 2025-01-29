@@ -1,58 +1,29 @@
 /*
  See the LICENSE.txt file for this sample’s licensing information.
-
- Abstract:
- Structure to perform an extrude operation on a 2D shape, along a 3D curve.
- The geometry is generated as a RealityKit `LowLevelMesh` for low latency
- and control over buffer layouts.
  */
-
 import RealityKit
 import Foundation
 import simd
 
-/// Structure to perform an extrude operation on a 2D shape, along a 3D curve.
 class CurveExtruder {
   private var lowLevelMesh: LowLevelMesh?
 
-  /// The shape to extrude.
-  ///
-  /// Assumed to be centered about the origin.
   let shape: [SIMD2<Float>]
   let radius: Float
-
-  /// Topology of each triangle strip in the extruded solid.
-  ///
-  /// The topology is static and determined by the number of
-  /// points on the shape.
-  /// This topology is meant to be used with `MTLPrimitiveType.triangleStrip`.
   let topology: [UInt32]
 
   private(set) var samples: [CurveSample] = []
-
-  /// The number of samples in `samples` that have been meshed in `lowLevelMesh`.
   private var materializedSampleCount: Int = 0
 
-  /// The number of samples for which `lowLevelMesh` has capacity.
   @MainActor
   private var sampleCapacity: Int {
     let vertexCapacity = lowLevelMesh?.vertexCapacity ?? 0
     let indexCapacity = lowLevelMesh?.indexCapacity ?? 0
-
-    // Each sample adds `shape.count` vertices.
     let sampleVertexCapacity = vertexCapacity / shape.count
-
-    // Each segment between two samples adds `topology.count` indices.
     let sampleIndexCapacity = indexCapacity / topology.count + 1
-
     return min(sampleVertexCapacity, sampleIndexCapacity)
   }
 
-  /// If necessary, reallocates `self.lowLevelMesh` so that the buffer size is suitable to be filled with
-  /// all of the curve samples in `self.samples`.
-  ///
-  /// - Returns: True if a `LowLevelMesh` was reallocated. In this case, callers must reapply the `LowLevelMesh`
-  ///      to their RealityKit `MeshResource`.
   @MainActor
   private func reallocateMeshIfNeeded(lastSampleIndex: Int) throws -> Bool {
     // If more than 75% of the samples have faded out, just copy the most recent samples to the start of the array.
@@ -111,8 +82,6 @@ class CurveExtruder {
           newBuffer.copyMemory(from: oldBuffer)
         }
       }
-
-      // Copy the parts array from the old mesh to the new one.
       newMesh.parts = lowLevelMesh.parts
     }
 
@@ -121,7 +90,6 @@ class CurveExtruder {
     return true
   }
 
-  /// Generates a `LowLevelMesh` suitable to be populated by `CurveExtruder` with the specified vertex and index capacity.
   @MainActor
   private static func makeLowLevelMesh(vertexCapacity: Int, indexCapacity: Int) throws -> LowLevelMesh {
     var descriptor = TrailVertex.descriptor
@@ -130,15 +98,10 @@ class CurveExtruder {
     return try LowLevelMesh(descriptor: descriptor)
   }
 
-  /// Initializes the `CurveExtruder` with the shape to sweep along the curve.
-  ///
-  /// - Parameters:
-  ///   - shape: The 2D shape to sweep along the curve.
   init(shape: [SIMD2<Float>], radius: Float) {
     self.shape = shape
     self.radius = radius
 
-    // Compute topology //
     // Triangle fan lists each vertex in `shape` once for each ring, except for vertex `0` of `shape` which
     // is listed twice. Plus one extra index for the end-index (0xFFFFFFFF).
     let indexCountPerFan = 2 * (shape.count + 1) + 1
@@ -163,25 +126,15 @@ class CurveExtruder {
     self.topology = topology
   }
 
-  /// Appends `samples` to the list of 3D curve samples used to generate the mesh.
   func append<S: Sequence>(samples: S) where S.Element == CurveSample {
     self.samples.append(contentsOf: samples)
   }
 
-  /// Removes samples from the end of the 3D curve which were previously added with `append`.
   func removeLast(sampleCount: Int) {
     samples.removeLast(sampleCount)
     materializedSampleCount = min(materializedSampleCount, max(samples.count - 1, 0))
   }
 
-  /// Updates the `LowLevelMesh` which is maintained by this CurveExtruder.
-  ///
-  /// This applies pending calls to `append` or `removeLast`
-  /// to the `LowLevelMesh`.
-  ///
-  /// - Returns: A `LowLevelMesh` if a new mesh had to be allocated
-  ///     (that is, the number of samples exceeded the capacity of the previous mesh).
-  ///     Returns `nil` if no new `LowLevelMesh` was allocated.
   @MainActor
   func update(elapsed: Float) throws -> LowLevelMesh? {
     var startSample = samples.firstIndex { elapsed - $0.point.timeAdded < 1.0 } ?? 0
@@ -199,9 +152,6 @@ class CurveExtruder {
       lowLevelMesh.parts.removeAll()
       if samples.count > 1 {
         let triangleFanCount = samples.count - 1 - startSample
-
-        // Use the bounding box to occlude parts of your mesh when it isn't visible.
-        // The drawing app should display all brush strokes, so use an arbitrarily large bounds.
         let bounds = BoundingBox(min: [-100, -100, -100], max: [100, 100, 100])
         let part = LowLevelMesh.Part(indexOffset: startSample * topology.count * MemoryLayout<UInt32>.stride,
                                      indexCount: triangleFanCount * topology.count,
@@ -227,29 +177,27 @@ class CurveExtruder {
     return didReallocate ? lowLevelMesh : nil
   }
 
-  /// Internal routine to update the vertex buffer of the underlying `LowLevelMesh` to include new changes to `samples`.
   private func updateVertexBuffer(_ vertexBuffer: UnsafeMutableBufferPointer<TrailVertex>) {
     guard materializedSampleCount < samples.count else { return }
 
     for sampleIndex in materializedSampleCount..<samples.count {
       let sample = samples[sampleIndex]
-      let frame = sample.rotationFrame
 
       for shapeVertexIndex in 0..<shape.count {
         var vertex = TrailVertex()
 
         // Use the rotation frame of `sample` to compute the 3D position of this vertex.
         let position2d = shape[shapeVertexIndex] * radius
-        vertex.position = frame * SIMD3<Float>(position2d, 0) + sample.point.position
+        vertex.position = sample.rotationFrame * SIMD3<Float>(position2d, 0) + sample.point.position
 
         // To compute the 3D bitangent, take the tangent of the shape in 2D
         // and orient with respect to the rotation frame of `sample`.
         let nextShapeIndex = (shapeVertexIndex + 1) % shape.count
         let prevShapeIndex = (shapeVertexIndex + shape.count - 1) % shape.count
         let bitangent2d = simd_normalize(shape[nextShapeIndex] - shape[prevShapeIndex])
-        vertex.bitangent = frame * SIMD3<Float>(bitangent2d, 0)
+        vertex.bitangent = sample.rotationFrame * SIMD3<Float>(bitangent2d, 0)
 
-        vertex.normal = frame * SIMD3<Float>(bitangent2d.y, -bitangent2d.x, 0)
+        vertex.normal = sample.rotationFrame * SIMD3<Float>(bitangent2d.y, -bitangent2d.x, 0)
         vertex.timeline = SIMD2<Float>(sample.point.timeAdded, 0)
         vertex.curveDistance = sample.curveDistance
 
