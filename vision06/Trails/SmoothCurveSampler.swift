@@ -33,6 +33,7 @@ public struct SmoothCurveSampler {
   }
   
   /// All of the key points which have been submitted to the `SmoothCurveSampler.`
+  /// TODO: remove expired KeyPoints
   private var keyPoints: [KeyPoint] = []
   
   private var positionSpline: LazyMapSequence<[KeyPoint], SIMD3<Float>> {
