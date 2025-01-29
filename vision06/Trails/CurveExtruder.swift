@@ -60,8 +60,8 @@ class CurveExtruder {
       samples = Array(samples[lastSampleIndex..<samples.count])
       materializedSampleCount -= lastSampleIndex
       lowLevelMesh.withUnsafeMutableBytes(bufferIndex: 0) { buffer in
-        let startVertexByte = lastSampleIndex * shape.count * MemoryLayout<SolidBrushVertex>.stride
-        let vertexBytes = samples.count * shape.count * MemoryLayout<SolidBrushVertex>.stride
+        let startVertexByte = lastSampleIndex * shape.count * MemoryLayout<TrailVertex>.stride
+        let vertexBytes = samples.count * shape.count * MemoryLayout<TrailVertex>.stride
         // move `vertexBytes` bytes from `startVertexBytes` to the beginning of the buffer
         buffer.copyMemory(from: UnsafeRawBufferPointer(start: buffer.baseAddress!.advanced(by: startVertexByte), count: vertexBytes))
       }
@@ -124,15 +124,9 @@ class CurveExtruder {
   /// Generates a `LowLevelMesh` suitable to be populated by `CurveExtruder` with the specified vertex and index capacity.
   @MainActor
   private static func makeLowLevelMesh(vertexCapacity: Int, indexCapacity: Int) throws -> LowLevelMesh {
-    var descriptor = LowLevelMesh.Descriptor()
-
+    var descriptor = TrailVertex.descriptor
     descriptor.vertexCapacity = vertexCapacity
     descriptor.indexCapacity = indexCapacity
-    descriptor.vertexAttributes = SolidBrushVertex.vertexAttributes
-
-    let stride = MemoryLayout<SolidBrushVertex>.stride
-    descriptor.vertexLayouts = [.init(bufferIndex: 0, bufferStride: stride)]
-
     return try LowLevelMesh(descriptor: descriptor)
   }
 
@@ -197,7 +191,7 @@ class CurveExtruder {
     if materializedSampleCount != samples.count, let lowLevelMesh {
       if materializedSampleCount < samples.count {
         lowLevelMesh.withUnsafeMutableBytes(bufferIndex: 0) { rawBuffer in
-          let vertexBuffer = rawBuffer.bindMemory(to: SolidBrushVertex.self)
+          let vertexBuffer = rawBuffer.bindMemory(to: TrailVertex.self)
           updateVertexBuffer(vertexBuffer)
         }
       }
@@ -221,7 +215,7 @@ class CurveExtruder {
     // Update timeline of all vertices
     if let lowLevelMesh {
       lowLevelMesh.withUnsafeMutableBytes(bufferIndex: 0) { buffer in
-        let vertexBuffer = buffer.bindMemory(to: SolidBrushVertex.self)
+        let vertexBuffer = buffer.bindMemory(to: TrailVertex.self)
         for i in startSample..<samples.count {
           for j in 0..<shape.count {
             vertexBuffer[i * shape.count + j].timeline.y = elapsed
@@ -234,7 +228,7 @@ class CurveExtruder {
   }
 
   /// Internal routine to update the vertex buffer of the underlying `LowLevelMesh` to include new changes to `samples`.
-  private func updateVertexBuffer(_ vertexBuffer: UnsafeMutableBufferPointer<SolidBrushVertex>) {
+  private func updateVertexBuffer(_ vertexBuffer: UnsafeMutableBufferPointer<TrailVertex>) {
     guard materializedSampleCount < samples.count else { return }
 
     for sampleIndex in materializedSampleCount..<samples.count {
@@ -242,31 +236,27 @@ class CurveExtruder {
       let frame = sample.rotationFrame
 
       for shapeVertexIndex in 0..<shape.count {
-        var vertex = SolidBrushVertex()
+        var vertex = TrailVertex()
 
         // Use the rotation frame of `sample` to compute the 3D position of this vertex.
         let position2d = shape[shapeVertexIndex] * radius
-        let position3d = frame * SIMD3<Float>(position2d, 0) + sample.point.position
+        vertex.position = frame * SIMD3<Float>(position2d, 0) + sample.point.position
 
         // To compute the 3D bitangent, take the tangent of the shape in 2D
         // and orient with respect to the rotation frame of `sample`.
         let nextShapeIndex = (shapeVertexIndex + 1) % shape.count
         let prevShapeIndex = (shapeVertexIndex + shape.count - 1) % shape.count
         let bitangent2d = simd_normalize(shape[nextShapeIndex] - shape[prevShapeIndex])
-        let bitangent3d = frame * SIMD3<Float>(bitangent2d, 0)
-        let normal3d = frame * SIMD3<Float>(bitangent2d.y, -bitangent2d.x, 0)
+        vertex.bitangent = frame * SIMD3<Float>(bitangent2d, 0)
 
-        // Assign vertex attributes based on the values computed above.
-        vertex.position = position3d.packed3
-        vertex.bitangent = bitangent3d.packed3
-        vertex.normal = normal3d.packed3
+        vertex.normal = frame * SIMD3<Float>(bitangent2d.y, -bitangent2d.x, 0)
         vertex.timeline = SIMD2<Float>(sample.point.timeAdded, 0)
         vertex.curveDistance = sample.curveDistance
 
         // Verify: This mesh generator should never output NaN.
-        assert(any(isnan(vertex.position.simd3) .== 0))
-        assert(any(isnan(vertex.bitangent.simd3) .== 0))
-        assert(any(isnan(vertex.normal.simd3) .== 0))
+        assert(any(isnan(vertex.position) .== 0))
+        assert(any(isnan(vertex.bitangent) .== 0))
+        assert(any(isnan(vertex.normal) .== 0))
 
         vertexBuffer[sampleIndex * shape.count + shapeVertexIndex] = vertex
       }
