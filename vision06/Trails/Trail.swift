@@ -69,6 +69,10 @@ public class Trail {
   @MainActor
   func updateInput() {
     let input = rightFingerTip.position(relativeTo: nil)
+    if input.x == 0 && input.y == 0 {
+      // Sometimes the position reports (0, 0, something) at startup, ignore it.
+      return
+    }
     if distance(lastPoint, input) < 0.0001 {
       return
     }
