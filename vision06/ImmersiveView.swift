@@ -1,5 +1,4 @@
 import Accelerate
-import ARKit
 import SwiftUI
 import RealityKit
 import RealityKitContent
@@ -7,10 +6,7 @@ import RealityKitContent
 struct ImmersiveView: View {
   @Environment(AppModel.self) private var appModel
 
-  let session = ARKitSession()
-  let worldTracking = WorldTrackingProvider()
-  let handTracking = HandTrackingProvider()
-  let headAnchor = AnchorEntity(.head)
+  let session = SpatialTrackingSession()
 
   @State var sphere: ModelEntity?  // for debugging
   @State var buttonEntity: ViewAttachmentEntity?
@@ -47,8 +43,8 @@ struct ImmersiveView: View {
       }
 
       // Finger trails
-      SolidBrushSystem.registerSystem()
-      SolidBrushComponent.registerComponent()
+      TrailSystem.registerSystem()
+      TrailComponent.registerComponent()
       content.add(trailContent)
       trail = await Trail(rootEntity: trailContent)
     } update: { content, attachments in
@@ -58,28 +54,13 @@ struct ImmersiveView: View {
       }
     }
     .task {
-      do {
-        try await session.run([worldTracking, handTracking])
-      } catch {
-        print("ARKitSession error:", error)
-      }
-    }
-    .task {
-      for await update in handTracking.anchorUpdates {
-        if update.event == .updated {
-          if update.anchor.chirality == .right {
-            let finger = Transform(matrix: update.anchor.originFromAnchorTransform *
-                                   update.anchor.handSkeleton!.joint(.indexFingerTip).anchorFromJointTransform).translation
-            trail?.receive(input: [finger.x, finger.y, finger.z])
-//            if let buttonEntity {
-//              // Project fingertip coordinates onto the button surface
-//              buttonProjection = (buttonEntity.transform.matrix.inverse * SIMD4<Float>(finger.x, finger.y, finger.z, 1)).xyz
-//              buttonProjection.x = buttonProjection.x / buttonEntity.attachment.bounds.extents.x + 0.5
-//              buttonProjection.y = -buttonProjection.y  / buttonEntity.attachment.bounds.extents.y + 0.5
-//            }
-          }
-        }
-      }
+      _ = await session.run(SpatialTrackingSession.Configuration(tracking: [.hand]))
+//      if let buttonEntity {
+//        // Project fingertip coordinates onto the button surface
+//        buttonProjection = (buttonEntity.transform.matrix.inverse * SIMD4<Float>(finger.x, finger.y, finger.z, 1)).xyz
+//        buttonProjection.x = buttonProjection.x / buttonEntity.attachment.bounds.extents.x + 0.5
+//        buttonProjection.y = -buttonProjection.y  / buttonEntity.attachment.bounds.extents.y + 0.5
+//      }
     }
     .simultaneousGesture(dragGesture)
   }
