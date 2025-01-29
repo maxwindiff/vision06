@@ -25,7 +25,7 @@ class TrailSystem: System {
         if entity.components.has(ModelComponent.self) {
           entity.components[ModelComponent.self]!.mesh = resource
         } else {
-          let modelComponent = ModelComponent(mesh: resource, materials: [trail.material])
+          let modelComponent = ModelComponent(mesh: resource, materials: [trail.trailMaterial, trail.bloomMaterial])
           entity.components.set(modelComponent)
         }
       }
@@ -40,7 +40,8 @@ public class Trail {
 
   var extruder: CurveExtruder
   var smoothCurveSampler: SmoothCurveSampler
-  var material: RealityKit.Material
+  var trailMaterial: RealityKit.Material
+  var bloomMaterial: RealityKit.Material
 
   public struct Point {
     var position: SIMD3<Float>
@@ -56,9 +57,12 @@ public class Trail {
     // Output
     extruder = CurveExtruder(shape: makeCircle(radius: 1, segmentCount: Int(8)), radius: 0.001)
     smoothCurveSampler = SmoothCurveSampler(flatness: 0.001, extruder: extruder)
-    material = try! await ShaderGraphMaterial(named: "/Root/Material",
-                                              from: "FluxMaterial",
-                                              in: realityKitContentBundle)
+    trailMaterial = try! await ShaderGraphMaterial(named: "/Root/Material",
+                                                   from: "FluxMaterial",
+                                                   in: realityKitContentBundle)
+    bloomMaterial = try! await ShaderGraphMaterial(named: "/Root/Material",
+                                                   from: "FluxMaterial",
+                                                   in: realityKitContentBundle)
 
     let meshEntity = Entity()
     meshEntity.position = .zero
