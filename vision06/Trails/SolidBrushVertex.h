@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "Utilities/MetalPacking.h"
+#include "../Utilities/MetalPacking.h"
 
 // Vertex attribute data must respect size and alignment requirements in Metal Shading Language.
 // See Table 2.4, "Size and alignment of packed vector data types" in the Metal Shading Language Specification.
