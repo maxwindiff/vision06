@@ -20,13 +20,24 @@ class TrailSystem: System {
       let trail = entity.components[TrailComponent.self]!.trail
 
       trail.updateInput()
-      if let newMesh = try? trail.updateMesh(),
-         let resource = try? MeshResource(from: newMesh) {
-        if entity.components.has(ModelComponent.self) {
-          entity.components[ModelComponent.self]!.mesh = resource
-        } else {
-          let modelComponent = ModelComponent(mesh: resource, materials: [trail.trailMaterial, trail.bloomMaterial])
-          entity.components.set(modelComponent)
+      if let (newTrail, newBloom) = try? trail.updateMesh() {
+        if let resource = try? MeshResource(from: newTrail) {
+          if entity.components.has(ModelComponent.self) {
+            entity.components[ModelComponent.self]!.mesh = resource
+          } else {
+            let modelComponent = ModelComponent(mesh: resource, materials: [trail.trailMaterial])
+            entity.components.set(modelComponent)
+          }
+        }
+
+        if let resource = try? MeshResource(from: newBloom) {
+          let child = entity.children[0]
+          if child.components.has(ModelComponent.self) {
+            child.components[ModelComponent.self]!.mesh = resource
+          } else {
+            let modelComponent = ModelComponent(mesh: resource, materials: [trail.bloomMaterial])
+            child.components.set(modelComponent)
+          }
         }
       }
     }
@@ -64,10 +75,13 @@ public class Trail {
                                                    from: "FluxMaterial",
                                                    in: realityKitContentBundle)
 
-    let meshEntity = Entity()
-    meshEntity.position = .zero
-    meshEntity.components.set(TrailComponent(trail: self))
-    rootEntity.addChild(meshEntity)
+    let trailEntity = Entity()
+    trailEntity.position = .zero
+    trailEntity.components.set(TrailComponent(trail: self))
+    let bloomEntity = Entity()
+    bloomEntity.position = .zero
+    trailEntity.addChild(bloomEntity)
+    rootEntity.addChild(trailEntity)
   }
 
   @MainActor
@@ -87,7 +101,7 @@ public class Trail {
   }
 
   @MainActor
-  func updateMesh() throws -> LowLevelMesh? {
+  func updateMesh() throws -> (LowLevelMesh, LowLevelMesh)? {
     return try extruder.update(elapsed: Float(Date.now.timeIntervalSince(startDate)))
   }
 }

@@ -6,96 +6,124 @@ import Foundation
 import simd
 
 class CurveExtruder {
-  private var lowLevelMesh: LowLevelMesh?
+  private var trailMesh: LowLevelMesh?
+  private var bloomMesh: LowLevelMesh?
 
-  let shape: [SIMD2<Float>]
   let radius: Float
+  let shape: [SIMD2<Float>]
   let topology: [UInt32]
+  let bloomVertexCount = 2 // 2 vertices per sample
+  let bloomIndexCount = 6 // 2 triangles per sample
 
   private(set) var samples: [CurveSample] = []
   private var materializedSampleCount: Int = 0
 
   @MainActor
   private var sampleCapacity: Int {
-    let vertexCapacity = lowLevelMesh?.vertexCapacity ?? 0
-    let indexCapacity = lowLevelMesh?.indexCapacity ?? 0
+    let vertexCapacity = trailMesh?.vertexCapacity ?? 0
+    let indexCapacity = trailMesh?.indexCapacity ?? 0
     let sampleVertexCapacity = vertexCapacity / shape.count
     let sampleIndexCapacity = indexCapacity / topology.count + 1
     return min(sampleVertexCapacity, sampleIndexCapacity)
   }
 
   @MainActor
-  private func reallocateMeshIfNeeded(lastSampleIndex: Int) throws -> Bool {
-    // If more than 75% of the samples have faded out, just copy the most recent samples to the start of the array.
-    if let lowLevelMesh, Float(lastSampleIndex) / Float(sampleCapacity) > 0.75 {
+  private static func copyVertexBuffer(_ src: LowLevelMesh, _ dst: LowLevelMesh) {
+    dst.withUnsafeMutableBytes(bufferIndex: 0) { newBuffer in
+      src.withUnsafeBytes(bufferIndex: 0) { oldBuffer in
+        newBuffer.copyMemory(from: oldBuffer)
+      }
+    }
+    dst.parts = src.parts
+  }
+
+  @MainActor
+  private func reallocateMeshIfNeeded(lastSampleIndex: Int) throws -> (didReallocate: Bool, didCompact: Bool) {
+    // If more than 75% of the samples have faded out, compact most recent samples to the start of the array.
+    if Float(lastSampleIndex) / Float(sampleCapacity) > 0.75 {
       samples = Array(samples[lastSampleIndex..<samples.count])
       materializedSampleCount -= lastSampleIndex
-      lowLevelMesh.withUnsafeMutableBytes(bufferIndex: 0) { buffer in
-        let startVertexByte = lastSampleIndex * shape.count * MemoryLayout<TrailVertex>.stride
-        let vertexBytes = samples.count * shape.count * MemoryLayout<TrailVertex>.stride
-        // move `vertexBytes` bytes from `startVertexBytes` to the beginning of the buffer
-        buffer.copyMemory(from: UnsafeRawBufferPointer(start: buffer.baseAddress!.advanced(by: startVertexByte), count: vertexBytes))
+      if let trailMesh {
+        trailMesh.withUnsafeMutableBytes(bufferIndex: 0) { buffer in
+          // Move `vertexBytes` bytes from `startVertexBytes` to the beginning of the buffer
+          let startVertexByte = lastSampleIndex * shape.count * MemoryLayout<TrailVertex>.stride
+          let vertexBytes = samples.count * shape.count * MemoryLayout<TrailVertex>.stride
+          buffer.copyMemory(from: UnsafeRawBufferPointer(start: buffer.baseAddress!.advanced(by: startVertexByte), count: vertexBytes))
+        }
       }
-      return false
+      if let bloomMesh {
+        bloomMesh.withUnsafeMutableBytes(bufferIndex: 0) { buffer in
+          let startVertexByte = lastSampleIndex * bloomVertexCount * MemoryLayout<BloomVertex>.stride
+          let vertexBytes = samples.count * bloomVertexCount * MemoryLayout<BloomVertex>.stride
+          buffer.copyMemory(from: UnsafeRawBufferPointer(start: buffer.baseAddress!.advanced(by: startVertexByte), count: vertexBytes))
+        }
+      }
+      return (false, true)
     }
 
+    // Some resizing logic
     guard samples.count > sampleCapacity else {
-      // No need to reallocate if `sampleCapacity` is small enough.
-      return false
+      return (false, false)
     }
-
-    // Double the sample capacity each time a reallocation is needed.
     var newSampleCapacity = max(sampleCapacity, 1024)
     while newSampleCapacity < samples.count {
       newSampleCapacity *= 2
     }
 
-    // `shape` is instantiated at each sample.
-    let newVertexCapacity = newSampleCapacity * shape.count
-
-    // Each segment between two samples adds a triangle fan, which has `topology.count` indices.
-    let triangleFanCapacity = newSampleCapacity - 1
-    let newIndexCapacity = triangleFanCapacity * topology.count
-
-    let newMesh = try Self.makeLowLevelMesh(vertexCapacity: newVertexCapacity, indexCapacity: newIndexCapacity)
-
-    // The topology is fixed, so you only need to write to the index buffer once.
-    newMesh.withUnsafeMutableIndices { buffer in
-      // Fill the index buffer with `triangleFanCapacity` copies of the array `topology` offset for each sample.
-      let typedBuffer = buffer.bindMemory(to: UInt32.self)
-      for fanIndex in 0..<triangleFanCapacity {
+    // Resize the trail
+    var trailMeshDesc = TrailVertex.descriptor
+    trailMeshDesc.vertexCapacity = newSampleCapacity * shape.count // one shape per sample
+    trailMeshDesc.indexCapacity = (newSampleCapacity - 1) * topology.count // between every two samples
+    let newTrailMesh = try LowLevelMesh(descriptor: trailMeshDesc)
+    if let trailMesh {
+      Self.copyVertexBuffer(trailMesh, newTrailMesh)
+    }
+    newTrailMesh.withUnsafeMutableIndices { buffer in
+      // The topology is fixed, so you only need to write to the index buffer once.
+      let indexBuffer = buffer.bindMemory(to: UInt32.self)
+      for fanIndex in 0..<newSampleCapacity - 1 {
         for vertexIndex in 0..<topology.count {
           let bufferIndex = vertexIndex + topology.count * fanIndex
           if topology[vertexIndex] == UInt32.max {
-            typedBuffer[bufferIndex] = UInt32.max
+            indexBuffer[bufferIndex] = UInt32.max
           } else {
-            typedBuffer[bufferIndex] = topology[vertexIndex] + UInt32(shape.count * fanIndex)
+            indexBuffer[bufferIndex] = topology[vertexIndex] + UInt32(shape.count * fanIndex)
           }
         }
       }
     }
+    trailMesh = newTrailMesh
 
-    if let lowLevelMesh {
-      // Copy the vertex buffer from the old mesh to the new one.
-      lowLevelMesh.withUnsafeBytes(bufferIndex: 0) { oldBuffer in
-        newMesh.withUnsafeMutableBytes(bufferIndex: 0) { newBuffer in
-          newBuffer.copyMemory(from: oldBuffer)
-        }
-      }
-      newMesh.parts = lowLevelMesh.parts
+    // Resize the bloom
+    var bloomMeshDesc = BloomVertex.descriptor
+    bloomMeshDesc.vertexCapacity = newSampleCapacity * bloomVertexCount
+    bloomMeshDesc.indexCapacity = (newSampleCapacity - 1) * bloomIndexCount // between every two samples
+    let newBloomMesh = try LowLevelMesh(descriptor: bloomMeshDesc)
+    if let bloomMesh {
+      Self.copyVertexBuffer(bloomMesh, newBloomMesh)
     }
+    newBloomMesh.withUnsafeMutableIndices { buffer in
+      // The topology is fixed, so you only need to write to the index buffer once.
+      let indexBuffer = buffer.bindMemory(to: UInt32.self)
+      for fanIndex in 0..<newSampleCapacity - 1 {
+        let baseIndex = fanIndex * bloomIndexCount
+        let baseVertex = UInt32(fanIndex * bloomVertexCount)
+        // 0 * ----- * 2 ...
+        //   |    /  |
+        //   |   /   |  newer =>
+        //   |  /    |
+        // 1 * ----- * 3 ...
+        indexBuffer[baseIndex + 0] = baseVertex
+        indexBuffer[baseIndex + 1] = baseVertex + 1
+        indexBuffer[baseIndex + 2] = baseVertex + 2
+        indexBuffer[baseIndex + 3] = baseVertex + 3
+        indexBuffer[baseIndex + 4] = baseVertex + 2
+        indexBuffer[baseIndex + 5] = baseVertex + 1
+      }
+    }
+    bloomMesh = newBloomMesh
 
-    lowLevelMesh = newMesh
-
-    return true
-  }
-
-  @MainActor
-  private static func makeLowLevelMesh(vertexCapacity: Int, indexCapacity: Int) throws -> LowLevelMesh {
-    var descriptor = TrailVertex.descriptor
-    descriptor.vertexCapacity = vertexCapacity
-    descriptor.indexCapacity = indexCapacity
-    return try LowLevelMesh(descriptor: descriptor)
+    return (true, false)
   }
 
   init(shape: [SIMD2<Float>], radius: Float) {
@@ -105,20 +133,16 @@ class CurveExtruder {
     // Triangle fan lists each vertex in `shape` once for each ring, except for vertex `0` of `shape` which
     // is listed twice. Plus one extra index for the end-index (0xFFFFFFFF).
     let indexCountPerFan = 2 * (shape.count + 1) + 1
-
     var topology: [UInt32] = []
     topology.reserveCapacity(indexCountPerFan)
-
     // Build triangle fan.
     for vertexIndex in shape.indices.reversed() {
       topology.append(UInt32(vertexIndex))
       topology.append(UInt32(shape.count + vertexIndex))
     }
-
     // Wrap around to the first vertex.
     topology.append(UInt32(shape.count - 1))
     topology.append(UInt32(2 * shape.count - 1))
-
     // Add end-index.
     topology.append(UInt32.max)
     assert(topology.count == indexCountPerFan)
@@ -136,79 +160,112 @@ class CurveExtruder {
   }
 
   @MainActor
-  func update(elapsed: Float) throws -> LowLevelMesh? {
+  func update(elapsed: Float) throws -> (LowLevelMesh, LowLevelMesh)? {
     var startSample = samples.firstIndex { elapsed - $0.point.timeAdded < 1.0 } ?? 0
-    let didReallocate = try reallocateMeshIfNeeded(lastSampleIndex: startSample)
-    startSample = samples.firstIndex { elapsed - $0.point.timeAdded < 1.0 } ?? 0
+    let (didReallocate, didCompact) = try reallocateMeshIfNeeded(lastSampleIndex: startSample)
+    if didCompact {
+      startSample = 0
+    }
 
-    if materializedSampleCount != samples.count, let lowLevelMesh {
+    guard let trailMesh, let bloomMesh else {
+      return nil
+    }
+
+    if materializedSampleCount != samples.count {
       if materializedSampleCount < samples.count {
-        lowLevelMesh.withUnsafeMutableBytes(bufferIndex: 0) { rawBuffer in
-          let vertexBuffer = rawBuffer.bindMemory(to: TrailVertex.self)
-          updateVertexBuffer(vertexBuffer)
+        trailMesh.withUnsafeMutableBytes(bufferIndex: 0) { trailBuffer in
+          updateTrailVertexBuffer(trailBuffer.bindMemory(to: TrailVertex.self))
         }
+        bloomMesh.withUnsafeMutableBytes(bufferIndex: 0) { bloomBuffer in
+          updateBloomVertexBuffer(bloomBuffer.bindMemory(to: BloomVertex.self))
+        }
+        materializedSampleCount = samples.count
       }
 
-      lowLevelMesh.parts.removeAll()
-      if samples.count > 1 {
-        let triangleFanCount = samples.count - 1 - startSample
-        let bounds = BoundingBox(min: [-100, -100, -100], max: [100, 100, 100])
-        let part = LowLevelMesh.Part(indexOffset: startSample * topology.count * MemoryLayout<UInt32>.stride,
-                                     indexCount: triangleFanCount * topology.count,
-                                     topology: .triangleStrip,
-                                     materialIndex: 0,
-                                     bounds: bounds)
-        lowLevelMesh.parts.append(part)
+      let activeSamples = samples.count - startSample
+      let bounds = BoundingBox(min: [-10, -10, -10], max: [10, 10, 10])
+      if activeSamples > 1 {
+        let trailPart = LowLevelMesh.Part(indexOffset: startSample * topology.count * MemoryLayout<UInt32>.stride,
+                                          indexCount: (activeSamples - 1) * topology.count,
+                                          topology: .triangleStrip,
+                                          materialIndex: 0,
+                                          bounds: bounds)
+        trailMesh.parts.removeAll()
+        trailMesh.parts.append(trailPart)
+
+        let bloomPart = LowLevelMesh.Part(indexOffset: startSample * bloomIndexCount * MemoryLayout<UInt32>.stride,
+                                          indexCount: (activeSamples - 1) * bloomIndexCount,
+                                          topology: .triangle,
+                                          materialIndex: 0,
+                                          bounds: bounds)
+        bloomMesh.parts.removeAll()
+        bloomMesh.parts.append(bloomPart)
       }
     }
 
     // Update timeline of all vertices
-    if let lowLevelMesh {
-      lowLevelMesh.withUnsafeMutableBytes(bufferIndex: 0) { buffer in
-        let vertexBuffer = buffer.bindMemory(to: TrailVertex.self)
-        for i in startSample..<samples.count {
-          for j in 0..<shape.count {
-            vertexBuffer[i * shape.count + j].timeline.y = elapsed
-          }
+    trailMesh.withUnsafeMutableBytes(bufferIndex: 0) { buffer in
+      let vertexBuffer = buffer.bindMemory(to: TrailVertex.self)
+      for i in startSample..<samples.count {
+        for j in 0..<shape.count {
+          vertexBuffer[i * shape.count + j].timeline.y = elapsed
+        }
+      }
+    }
+    bloomMesh.withUnsafeMutableBytes(bufferIndex: 0) { buffer in
+      let vertexBuffer = buffer.bindMemory(to: BloomVertex.self)
+      for i in startSample..<samples.count {
+        for j in 0..<bloomVertexCount {
+          vertexBuffer[i * bloomVertexCount + j].timeline.y = elapsed
         }
       }
     }
 
-    return didReallocate ? lowLevelMesh : nil
+    return didReallocate ? (trailMesh, bloomMesh) : nil
   }
 
-  private func updateVertexBuffer(_ vertexBuffer: UnsafeMutableBufferPointer<TrailVertex>) {
-    guard materializedSampleCount < samples.count else { return }
-
+  private func updateTrailVertexBuffer(_ trailVertices: UnsafeMutableBufferPointer<TrailVertex>) {
     for sampleIndex in materializedSampleCount..<samples.count {
       let sample = samples[sampleIndex]
-
       for shapeVertexIndex in 0..<shape.count {
-        var vertex = TrailVertex()
+        var trailVertex = TrailVertex()
 
         // Use the rotation frame of `sample` to compute the 3D position of this vertex.
         let position2d = shape[shapeVertexIndex] * radius
-        vertex.position = sample.rotationFrame * SIMD3<Float>(position2d, 0) + sample.point.position
+        trailVertex.position = sample.rotationFrame * SIMD3<Float>(position2d, 0) + sample.position
 
         // To compute the 3D bitangent, take the tangent of the shape in 2D
         // and orient with respect to the rotation frame of `sample`.
         let nextShapeIndex = (shapeVertexIndex + 1) % shape.count
         let prevShapeIndex = (shapeVertexIndex + shape.count - 1) % shape.count
         let bitangent2d = simd_normalize(shape[nextShapeIndex] - shape[prevShapeIndex])
-        vertex.bitangent = sample.rotationFrame * SIMD3<Float>(bitangent2d, 0)
+        trailVertex.bitangent = sample.rotationFrame * SIMD3<Float>(bitangent2d, 0)
 
-        vertex.normal = sample.rotationFrame * SIMD3<Float>(bitangent2d.y, -bitangent2d.x, 0)
-        vertex.timeline = SIMD2<Float>(sample.point.timeAdded, 0)
-        vertex.curveDistance = sample.curveDistance
+        trailVertex.normal = sample.rotationFrame * SIMD3<Float>(bitangent2d.y, -bitangent2d.x, 0)
+        trailVertex.curveDistance = sample.curveDistance
+        trailVertex.timeline = SIMD2<Float>(sample.point.timeAdded, 0)
 
         // Verify: This mesh generator should never output NaN.
-        assert(any(isnan(vertex.position) .== 0))
-        assert(any(isnan(vertex.bitangent) .== 0))
-        assert(any(isnan(vertex.normal) .== 0))
+        assert(any(isnan(trailVertex.position) .== 0))
+        assert(any(isnan(trailVertex.bitangent) .== 0))
+        assert(any(isnan(trailVertex.normal) .== 0))
 
-        vertexBuffer[sampleIndex * shape.count + shapeVertexIndex] = vertex
+        trailVertices[sampleIndex * shape.count + shapeVertexIndex] = trailVertex
       }
     }
-    materializedSampleCount = samples.count
+  }
+
+  private func updateBloomVertexBuffer(_ bloomVertices: UnsafeMutableBufferPointer<BloomVertex>) {
+    for sampleIndex in materializedSampleCount..<samples.count {
+      let sample = samples[sampleIndex]
+      for bloomVertexIndex in 0..<bloomVertexCount {
+        var bloomVertex = BloomVertex()
+        bloomVertex.position = sample.position + SIMD3<Float>(0, Float(bloomVertexIndex) * 0.01, 0)  // TODO: unbias
+        bloomVertex.curveDistance = sample.curveDistance
+        bloomVertex.timeline = SIMD2<Float>(sample.point.timeAdded, 0)
+        bloomVertex.params = SIMD2<Float>(Float(bloomVertexIndex), 0)
+        bloomVertices[sampleIndex * bloomVertexCount + bloomVertexIndex] = bloomVertex
+      }
+    }
   }
 }
