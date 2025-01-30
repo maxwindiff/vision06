@@ -72,7 +72,7 @@ public class Trail {
                                                    from: "FluxMaterial",
                                                    in: realityKitContentBundle)
     bloomMaterial = try! await ShaderGraphMaterial(named: "/Root/Material",
-                                                   from: "FluxMaterial",
+                                                   from: "BloomMaterial",
                                                    in: realityKitContentBundle)
 
     let trailEntity = Entity()

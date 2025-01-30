@@ -4,7 +4,7 @@ struct BloomVertex {
   var position: SIMD3<Float> = .zero
   var curveDistance: Float = .zero
   var timeline: SIMD2<Float> = .zero
-  var params: SIMD2<Float> = .zero
+  var direction: SIMD3<Float> = .zero
 }
 
 extension BloomVertex {
@@ -12,7 +12,7 @@ extension BloomVertex {
     .init(semantic: .position, format: .float3, offset: MemoryLayout.offset(of: \Self.position)!),
     .init(semantic: .uv1, format: .float, offset: MemoryLayout.offset(of: \Self.curveDistance)!),
     .init(semantic: .uv2, format: .float2, offset: MemoryLayout.offset(of: \Self.timeline)!),
-    .init(semantic: .uv3, format: .float2, offset: MemoryLayout.offset(of: \Self.params)!),
+    .init(semantic: .color, format: .float3, offset: MemoryLayout.offset(of: \Self.direction)!),
   ]
 
   static var vertexLayouts: [LowLevelMesh.Layout] = [

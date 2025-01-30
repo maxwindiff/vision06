@@ -16,7 +16,7 @@ def Xform "Root"
         token outputs:realitykit:vertex
         string[] ui:nodegraph:realitykit:node:attributesShowingChildren = ["outputs:mtlx:surface"]
         float2 ui:nodegraph:realitykit:subgraphOutputs:pos = (855.6133, 99.21094)
-        int ui:nodegraph:realitykit:subgraphOutputs:stackingOrder = 284
+        int ui:nodegraph:realitykit:subgraphOutputs:stackingOrder = 544
 
         def Shader "HSVToRGB"
         {
@@ -24,7 +24,7 @@ def Xform "Root"
             color3f inputs:in.connect = </Root/Material/Combine3.outputs:out>
             color3f outputs:out
             float2 ui:nodegraph:node:pos = (103.72266, 204.64453)
-            int ui:nodegraph:node:stackingOrder = 379
+            int ui:nodegraph:node:stackingOrder = 620
         }
 
         def Shader "Combine3"
@@ -36,7 +36,7 @@ def Xform "Root"
             float inputs:in3 = 0.8
             color3f outputs:out
             float2 ui:nodegraph:node:pos = (-83.40625, 207.88672)
-            int ui:nodegraph:node:stackingOrder = 417
+            int ui:nodegraph:node:stackingOrder = 620
             string[] ui:nodegraph:realitykit:node:attributesShowingChildren = []
         }
 
@@ -54,7 +54,7 @@ def Xform "Root"
             float inputs:opacityThreshold
             token outputs:out
             float2 ui:nodegraph:node:pos = (606.15625, 137.26172)
-            int ui:nodegraph:node:stackingOrder = 372
+            int ui:nodegraph:node:stackingOrder = 620
             string[] ui:nodegraph:realitykit:node:attributesShowingChildren = ["outputs:out"]
         }
 
@@ -64,7 +64,7 @@ def Xform "Root"
             int inputs:index = 2
             float2 outputs:out
             float2 ui:nodegraph:node:pos = (-418.67188, -25.257812)
-            int ui:nodegraph:node:stackingOrder = 349
+            int ui:nodegraph:node:stackingOrder = 620
         }
 
         def Shader "Separate2_1"
@@ -74,7 +74,7 @@ def Xform "Root"
             float outputs:outx
             float outputs:outy
             float2 ui:nodegraph:node:pos = (-185.03516, -24.027344)
-            int ui:nodegraph:node:stackingOrder = 351
+            int ui:nodegraph:node:stackingOrder = 620
         }
 
         def Shader "Subtract_1"
@@ -84,7 +84,7 @@ def Xform "Root"
             float inputs:in2.connect = </Root/Material/Separate2_1.outputs:outx>
             float outputs:out
             float2 ui:nodegraph:node:pos = (-4.5078125, -22.054688)
-            int ui:nodegraph:node:stackingOrder = 384
+            int ui:nodegraph:node:stackingOrder = 620
         }
 
         def Shader "SmoothStep"
@@ -95,7 +95,7 @@ def Xform "Root"
             float inputs:low = 0.9
             float outputs:out
             float2 ui:nodegraph:node:pos = (164.99219, -14.082031)
-            int ui:nodegraph:node:stackingOrder = 411
+            int ui:nodegraph:node:stackingOrder = 620
         }
 
         def Shader "Multiply"
@@ -105,7 +105,7 @@ def Xform "Root"
             float inputs:in2.connect = </Root/Material/SmoothStep.outputs:out>
             color3f outputs:out
             float2 ui:nodegraph:node:pos = (344.72656, 110.30859)
-            int ui:nodegraph:node:stackingOrder = 400
+            int ui:nodegraph:node:stackingOrder = 620
         }
     }
 }

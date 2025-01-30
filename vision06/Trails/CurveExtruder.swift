@@ -13,7 +13,7 @@ class CurveExtruder {
   let shape: [SIMD2<Float>]
   let topology: [UInt32]
   let bloomVertexCount = 2 // 2 vertices per sample
-  let bloomIndexCount = 6 // 2 triangles per sample
+  let bloomIndexCount = 4 * 3 // 4 triangles per sample
 
   private(set) var samples: [CurveSample] = []
   private var materializedSampleCount: Int = 0
@@ -119,6 +119,10 @@ class CurveExtruder {
         indexBuffer[baseIndex + 3] = baseVertex + 3
         indexBuffer[baseIndex + 4] = baseVertex + 2
         indexBuffer[baseIndex + 5] = baseVertex + 1
+        for offset in 0..<6 {
+          // Back-facing triangles
+          indexBuffer[baseIndex + 6 + offset] = indexBuffer[baseIndex + 5 - offset]
+        }
       }
     }
     bloomMesh = newBloomMesh
@@ -260,10 +264,10 @@ class CurveExtruder {
       let sample = samples[sampleIndex]
       for bloomVertexIndex in 0..<bloomVertexCount {
         var bloomVertex = BloomVertex()
-        bloomVertex.position = sample.position + SIMD3<Float>(0, Float(bloomVertexIndex) * 0.01, 0)  // TODO: unbias
+        bloomVertex.position = sample.position
         bloomVertex.curveDistance = sample.curveDistance
         bloomVertex.timeline = SIMD2<Float>(sample.point.timeAdded, 0)
-        bloomVertex.params = SIMD2<Float>(Float(bloomVertexIndex), 0)
+        bloomVertex.direction = sampleIndex == 0 ? .zero : sample.position - samples[sampleIndex-1].position
         bloomVertices[sampleIndex * bloomVertexCount + bloomVertexIndex] = bloomVertex
       }
     }
