@@ -5,6 +5,7 @@ import RealityKit
 import Foundation
 import simd
 
+// TODO: extract duplicate code shared by two meshes
 class CurveExtruder {
   private var trailMesh: LowLevelMesh?
   private var bloomMesh: LowLevelMesh?
@@ -208,6 +209,7 @@ class CurveExtruder {
     }
 
     // Update timeline of all vertices
+    // TODO: more efficient way to fill all?
     trailMesh.withUnsafeMutableBytes(bufferIndex: 0) { buffer in
       let vertexBuffer = buffer.bindMemory(to: TrailVertex.self)
       for i in startSample..<samples.count {
