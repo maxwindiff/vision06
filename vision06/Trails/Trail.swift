@@ -48,11 +48,12 @@ public class Trail {
   let rightFingerTip = AnchorEntity(.hand(.right, location: .indexFingerTip))
   let startDate: Date
   var lastPoint: SIMD3<Float> = .zero
+  var count: Int = 0
 
   var extruder: CurveExtruder
   var smoothCurveSampler: SmoothCurveSampler
-  var trailMaterial: RealityKit.Material
-  var bloomMaterial: RealityKit.Material
+  var trailMaterial: ShaderGraphMaterial
+  var bloomMaterial: ShaderGraphMaterial
 
   public struct Point {
     var position: SIMD3<Float>
@@ -60,20 +61,21 @@ public class Trail {
   }
 
   @MainActor
-  init(rootEntity: Entity) async {
+  init(rootEntity: Entity) async throws {
     // Input
     startDate = Date.now
     rootEntity.addChild(rightFingerTip)
 
     // Output
-    extruder = CurveExtruder(shape: makeCircle(radius: 1, segmentCount: Int(8)), radius: 0.001)
+    extruder = CurveExtruder(shape: makeCircle(radius: 1, segmentCount: Int(4)), radius: 0.0004, fadeTime: 1.0)
     smoothCurveSampler = SmoothCurveSampler(flatness: 0.001, extruder: extruder)
-    trailMaterial = try! await ShaderGraphMaterial(named: "/Root/Material",
+    trailMaterial = try await ShaderGraphMaterial(named: "/Root/Material",
                                                    from: "FluxMaterial",
                                                    in: realityKitContentBundle)
-    bloomMaterial = try! await ShaderGraphMaterial(named: "/Root/Material",
+    bloomMaterial = try await ShaderGraphMaterial(named: "/Root/Material",
                                                    from: "BloomMaterial",
                                                    in: realityKitContentBundle)
+    try bloomMaterial.setParameter(name: "Width", value: .float(0.005))
 
     let trailEntity = Entity()
     trailEntity.position = .zero
@@ -86,6 +88,9 @@ public class Trail {
 
   @MainActor
   func updateInput() {
+    count += 1
+    // if count > 1000 { return } // for debugging
+
     let input = rightFingerTip.position(relativeTo: nil)
     if input.x == 0 && input.y == 0 {
       // Sometimes the position reports (0, 0, something) at startup, ignore it.

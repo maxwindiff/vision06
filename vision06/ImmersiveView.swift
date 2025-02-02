@@ -46,7 +46,7 @@ struct ImmersiveView: View {
       TrailSystem.registerSystem()
       TrailComponent.registerComponent()
       content.add(trailContent)
-      trail = await Trail(rootEntity: trailContent)
+      trail = try! await Trail(rootEntity: trailContent)
     } update: { content, attachments in
     } attachments: {
       Attachment(id: "ButtonView") {
@@ -63,6 +63,9 @@ struct ImmersiveView: View {
 //      }
     }
     .simultaneousGesture(dragGesture)
+    .onDisappear {
+      trailContent.children.removeAll()
+    }
   }
 }
 

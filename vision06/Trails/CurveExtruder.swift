@@ -11,6 +11,7 @@ class CurveExtruder {
   private var bloomMesh: LowLevelMesh?
 
   let radius: Float
+  let fadeTime: Float
   let shape: [SIMD2<Float>]
   let topology: [UInt32]
   let bloomVertexCount = 2 // 2 vertices per sample
@@ -131,9 +132,10 @@ class CurveExtruder {
     return (true, false)
   }
 
-  init(shape: [SIMD2<Float>], radius: Float) {
+  init(shape: [SIMD2<Float>], radius: Float, fadeTime: Float) {
     self.shape = shape
     self.radius = radius
+    self.fadeTime = fadeTime
 
     // Triangle fan lists each vertex in `shape` once for each ring, except for vertex `0` of `shape` which
     // is listed twice. Plus one extra index for the end-index (0xFFFFFFFF).
@@ -166,7 +168,7 @@ class CurveExtruder {
 
   @MainActor
   func update(elapsed: Float) throws -> (LowLevelMesh, LowLevelMesh)? {
-    var startSample = samples.firstIndex { elapsed - $0.point.timeAdded < 1.0 } ?? 0
+    var startSample = samples.firstIndex { elapsed - $0.point.timeAdded < fadeTime } ?? 0
     let (didReallocate, didCompact) = try reallocateMeshIfNeeded(lastSampleIndex: startSample)
     if didCompact {
       startSample = 0
@@ -264,12 +266,25 @@ class CurveExtruder {
   private func updateBloomVertexBuffer(_ bloomVertices: UnsafeMutableBufferPointer<BloomVertex>) {
     for sampleIndex in materializedSampleCount..<samples.count {
       let sample = samples[sampleIndex]
+      let direction = sampleIndex == 0 ? .zero : normalize(sample.position - samples[sampleIndex-1].position)
+
+      // Rough attempt to reduce oversaturation when the ribbon rotates.
+      // TODO: it should be possible to reduct opacity only at the "creases" of the geometry.
+      // TODO: at least derive curvature from the spline parameters.
+      var curvature: Float = .zero
+      if sampleIndex >= 2 {
+        let lastDirection = normalize(samples[sampleIndex-1].position - samples[sampleIndex-2].position)
+        curvature = length(simd_cross(direction, lastDirection))
+      }
+      let curvatureFade = exp(-2.0 * curvature)
+
       for bloomVertexIndex in 0..<bloomVertexCount {
         var bloomVertex = BloomVertex()
         bloomVertex.position = sample.position
-        bloomVertex.curveDistance = sample.curveDistance
+        bloomVertex.direction = direction
+        bloomVertex.uv = SIMD2<Float>(Float(bloomVertexIndex % 2), Float(sampleIndex % 2))
+        bloomVertex.curveTopology = SIMD2<Float>(sample.curveDistance, curvatureFade)
         bloomVertex.timeline = SIMD2<Float>(sample.point.timeAdded, 0)
-        bloomVertex.direction = sampleIndex == 0 ? .zero : sample.position - samples[sampleIndex-1].position
         bloomVertices[sampleIndex * bloomVertexCount + bloomVertexIndex] = bloomVertex
       }
     }

@@ -1,7 +1,6 @@
 {
   "advancedEditorSelectedIdentifier" : "ShaderGraphEditorPluginID",
   "openSceneRelativePaths" : [
-    "GridMaterial.usda",
     "FluxMaterial.usda",
     "BloomMaterial.usda"
   ],
