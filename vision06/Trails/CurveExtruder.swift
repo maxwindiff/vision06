@@ -270,7 +270,7 @@ class CurveExtruder {
       // Calculate an expoentially weighted direction
       // TODO: is this actually necessary?
       var direction: SIMD3<Float> = .zero
-      if sampleIndex > 0 {gi
+      if sampleIndex > 0 {
         let recent = samples[max(0, sampleIndex - 4)...sampleIndex]
         for i in recent.startIndex..<recent.endIndex-1 {
           direction = normalize(0.2 * direction + 0.8 * (recent[i+1].position - recent[i].position))

@@ -67,14 +67,18 @@ public class Trail {
     rootEntity.addChild(rightFingerTip)
 
     // Output
-    extruder = CurveExtruder(shape: makeCircle(radius: 1, segmentCount: Int(4)), radius: 0.0001, fadeTime: 1.0)
+    extruder = CurveExtruder(shape: makeCircle(radius: 1, segmentCount: Int(4)), radius: 0.0001, fadeTime: 0.5)
     smoothCurveSampler = SmoothCurveSampler(flatness: 0.001, extruder: extruder)
     trailMaterial = try await ShaderGraphMaterial(named: "/Root/CoreMaterial",
                                                    from: "Materials",
                                                    in: realityKitContentBundle)
+    try trailMaterial.setParameter(name: "FadeOutBegin", value: .float(0.25))
+    try trailMaterial.setParameter(name: "FadeOutComplete", value: .float(0.5))
     bloomMaterial = try await ShaderGraphMaterial(named: "/Root/BloomMaterial",
                                                    from: "Materials",
                                                    in: realityKitContentBundle)
+    try bloomMaterial.setParameter(name: "FadeOutBegin", value: .float(0.25))
+    try bloomMaterial.setParameter(name: "FadeOutComplete", value: .float(0.5))
     try bloomMaterial.setParameter(name: "Width", value: .float(0.005))
 
     let trailEntity = Entity()
