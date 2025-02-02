@@ -216,7 +216,7 @@ class CurveExtruder {
       let vertexBuffer = buffer.bindMemory(to: TrailVertex.self)
       for i in startSample..<samples.count {
         for j in 0..<shape.count {
-          vertexBuffer[i * shape.count + j].timeline.y = elapsed
+          vertexBuffer[i * shape.count + j].timeline.x = elapsed
         }
       }
     }
@@ -224,7 +224,7 @@ class CurveExtruder {
       let vertexBuffer = buffer.bindMemory(to: BloomVertex.self)
       for i in startSample..<samples.count {
         for j in 0..<bloomVertexCount {
-          vertexBuffer[i * bloomVertexCount + j].timeline.y = elapsed
+          vertexBuffer[i * bloomVertexCount + j].timeline.x = elapsed
         }
       }
     }
@@ -251,7 +251,7 @@ class CurveExtruder {
 
         trailVertex.normal = sample.rotationFrame * SIMD3<Float>(bitangent2d.y, -bitangent2d.x, 0)
         trailVertex.curveDistance = sample.curveDistance
-        trailVertex.timeline = SIMD2<Float>(sample.point.timeAdded, 0)
+        trailVertex.timeline = SIMD2<Float>(0, sample.point.timeAdded)
 
         // Verify: This mesh generator should never output NaN.
         assert(any(isnan(trailVertex.position) .== 0))
@@ -268,8 +268,9 @@ class CurveExtruder {
       let sample = samples[sampleIndex]
 
       // Calculate an expoentially weighted direction
+      // TODO: is this actually necessary?
       var direction: SIMD3<Float> = .zero
-      if sampleIndex > 0 {
+      if sampleIndex > 0 {gi
         let recent = samples[max(0, sampleIndex - 4)...sampleIndex]
         for i in recent.startIndex..<recent.endIndex-1 {
           direction = normalize(0.2 * direction + 0.8 * (recent[i+1].position - recent[i].position))
@@ -284,7 +285,7 @@ class CurveExtruder {
         let lastDirection = normalize(samples[sampleIndex-1].position - samples[sampleIndex-2].position)
         curvature = length(simd_cross(direction, lastDirection))
       }
-      let curvatureFade = exp(-2.0 * curvature)
+      let curvatureFade = exp(-2.0 * curvature) * 3.0
 
       for bloomVertexIndex in 0..<bloomVertexCount {
         var bloomVertex = BloomVertex()
@@ -292,7 +293,7 @@ class CurveExtruder {
         bloomVertex.direction = direction
         bloomVertex.uv = SIMD2<Float>(Float(bloomVertexIndex % 2), Float(sampleIndex % 2))
         bloomVertex.curveTopology = SIMD2<Float>(sample.curveDistance, curvatureFade)
-        bloomVertex.timeline = SIMD2<Float>(sample.point.timeAdded, 0)
+        bloomVertex.timeline = SIMD2<Float>(0, sample.point.timeAdded)
         bloomVertices[sampleIndex * bloomVertexCount + bloomVertexIndex] = bloomVertex
       }
     }
