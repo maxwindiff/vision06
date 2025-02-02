@@ -1,8 +1,7 @@
 {
   "advancedEditorSelectedIdentifier" : "ShaderGraphEditorPluginID",
   "openSceneRelativePaths" : [
-    "FluxMaterial.usda",
-    "BloomMaterial.usda"
+    "Materials.usda"
   ],
   "recentIdentifiers" : {
     "622485A0-8BB8-4A31-8BFF-ADF0A265F66D" : [
@@ -42,10 +41,34 @@
           1
         ]
       }
+    ],
+    "B8AE3C2A-F5F0-470C-8EB0-3D593EBE495A" : [
+      {
+        "date" : 760171244.778145,
+        "title" : "Untitled",
+        "transform" : [
+          1,
+          0,
+          -0,
+          0,
+          -0,
+          0.7071069,
+          -0.7071067,
+          0,
+          0,
+          0.7071067,
+          0.7071069,
+          0,
+          1.1920929e-07,
+          0.13897681,
+          0.13897693,
+          1
+        ]
+      }
     ]
   },
   "sceneViewportBackgroundColors" : {
 
   },
-  "selectedSceneRelativePath" : "BloomMaterial.usda"
+  "selectedSceneRelativePath" : "Materials.usda"
 }

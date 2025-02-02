@@ -109,7 +109,25 @@
       [
         "B8AE3C2A-F5F0-470C-8EB0-3D593EBE495A",
         "Root",
+        "RainbowMaterial"
+      ],
+      {
+        "isExpanded" : true,
+        "isLocked" : false
+      },
+      [
+        "B8AE3C2A-F5F0-470C-8EB0-3D593EBE495A",
+        "Root",
         "TimeBasedFade"
+      ],
+      {
+        "isExpanded" : true,
+        "isLocked" : false
+      },
+      [
+        "B8AE3C2A-F5F0-470C-8EB0-3D593EBE495A",
+        "Root",
+        "CoreMaterial"
       ],
       {
         "isExpanded" : true,
@@ -127,15 +145,6 @@
       [
         "B8AE3C2A-F5F0-470C-8EB0-3D593EBE495A",
         "Root"
-      ],
-      {
-        "isExpanded" : true,
-        "isLocked" : false
-      },
-      [
-        "B8AE3C2A-F5F0-470C-8EB0-3D593EBE495A",
-        "Root",
-        "TrailMaterial"
       ],
       {
         "isExpanded" : true,

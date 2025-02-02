@@ -266,7 +266,15 @@ class CurveExtruder {
   private func updateBloomVertexBuffer(_ bloomVertices: UnsafeMutableBufferPointer<BloomVertex>) {
     for sampleIndex in materializedSampleCount..<samples.count {
       let sample = samples[sampleIndex]
-      let direction = sampleIndex == 0 ? .zero : normalize(sample.position - samples[sampleIndex-1].position)
+
+      // Calculate an expoentially weighted direction
+      var direction: SIMD3<Float> = .zero
+      if sampleIndex > 0 {
+        let recent = samples[max(0, sampleIndex - 4)...sampleIndex]
+        for i in recent.startIndex..<recent.endIndex-1 {
+          direction = normalize(0.2 * direction + 0.8 * (recent[i+1].position - recent[i].position))
+        }
+      }
 
       // Rough attempt to reduce oversaturation when the ribbon rotates.
       // TODO: it should be possible to reduct opacity only at the "creases" of the geometry.

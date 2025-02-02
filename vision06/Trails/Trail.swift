@@ -67,9 +67,9 @@ public class Trail {
     rootEntity.addChild(rightFingerTip)
 
     // Output
-    extruder = CurveExtruder(shape: makeCircle(radius: 1, segmentCount: Int(4)), radius: 0.0004, fadeTime: 1.0)
+    extruder = CurveExtruder(shape: makeCircle(radius: 1, segmentCount: Int(4)), radius: 0.0001, fadeTime: 1.0)
     smoothCurveSampler = SmoothCurveSampler(flatness: 0.001, extruder: extruder)
-    trailMaterial = try await ShaderGraphMaterial(named: "/Root/TrailMaterial",
+    trailMaterial = try await ShaderGraphMaterial(named: "/Root/CoreMaterial",
                                                    from: "Materials",
                                                    in: realityKitContentBundle)
     bloomMaterial = try await ShaderGraphMaterial(named: "/Root/BloomMaterial",
