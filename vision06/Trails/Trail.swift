@@ -69,7 +69,7 @@ public class Trail {
     startDate = Date.now
 
     // Output
-    extruder = CurveExtruder(shape: makeCircle(radius: 1, segmentCount: Int(4)), radius: 0.0001, fadeTime: 0.5)
+    extruder = CurveExtruder(shape: makeCircle(radius: 1, segmentCount: Int(4)), radius: 0.0003, fadeTime: 0.5)
     smoothCurveSampler = SmoothCurveSampler(flatness: 0.001, extruder: extruder)
     trailMaterial = try await ShaderGraphMaterial(named: "/Root/CoreMaterial",
                                                    from: "Materials",
@@ -82,7 +82,7 @@ public class Trail {
     try bloomMaterial.setParameter(name: "FadeOutBegin", value: .float(0.25))
     try bloomMaterial.setParameter(name: "FadeOutComplete", value: .float(0.5))
     try bloomMaterial.setParameter(name: "Color", value: .simd3Float(color))
-    try bloomMaterial.setParameter(name: "Width", value: .float(0.005))
+    try bloomMaterial.setParameter(name: "Width", value: .float(0.01))
 
     let trailEntity = Entity()
     trailEntity.position = .zero

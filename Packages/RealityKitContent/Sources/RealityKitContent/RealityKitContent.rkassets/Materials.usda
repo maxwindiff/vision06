@@ -454,7 +454,7 @@ def Xform "Root"
             float inputs:in2 = 0.03
             float3 outputs:out
             float2 ui:nodegraph:node:pos = (1501.3633, 213.07031)
-            int ui:nodegraph:node:stackingOrder = 2952
+            int ui:nodegraph:node:stackingOrder = 2954
         }
     }
 
