@@ -45,6 +45,7 @@ class TrailSystem: System {
 }
 
 public class Trail {
+  let palm: Entity
   let anchor: Entity
   let startDate: Date
   var lastPoint: SIMD3<Float> = .zero
@@ -61,8 +62,9 @@ public class Trail {
   }
 
   @MainActor
-  init(rootEntity: Entity, anchor: Entity, color: SIMD3<Float>) async throws {
+  init(rootEntity: Entity, palm: Entity, anchor: Entity, color: SIMD3<Float>) async throws {
     // Input
+    self.palm = palm
     self.anchor = anchor
     startDate = Date.now
 
@@ -96,11 +98,13 @@ public class Trail {
     count += 1
     // if count > 1000 { return } // for debugging
 
-    let input = anchor.position(relativeTo: nil)
+    var input = anchor.position(relativeTo: nil)
     if input.x == 0 && input.y == 0 {
       // Sometimes the position reports (0, 0, something) at startup, ignore it.
       return
     }
+    let palmToFinger = input - palm.position(relativeTo: nil)
+    input += normalize(palmToFinger) * 0.02
     if distance(lastPoint, input) < 0.0001 {
       return
     }

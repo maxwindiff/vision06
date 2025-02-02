@@ -12,6 +12,7 @@ struct ImmersiveView: View {
   @State var buttonEntity: ViewAttachmentEntity?
   @State var buttonProjection: SIMD3<Float> = [0, 0, 1]
 
+  let palm = AnchorEntity(.hand(.right, location: .palm))
   let rightThumbTip = AnchorEntity(.hand(.right, location: .joint(for: .thumbTip)))
   let rightIndexFingerTip = AnchorEntity(.hand(.right, location: .joint(for: .indexFingerTip)))
   let rightMiddleFingerTip = AnchorEntity(.hand(.right, location: .joint(for: .middleFingerTip)))
@@ -50,6 +51,7 @@ struct ImmersiveView: View {
       // Finger trails
       TrailSystem.registerSystem()
       TrailComponent.registerComponent()
+      trailContent.addChild(palm)
       trailContent.addChild(rightThumbTip)
       trailContent.addChild(rightIndexFingerTip)
       trailContent.addChild(rightMiddleFingerTip)
@@ -57,11 +59,11 @@ struct ImmersiveView: View {
       trailContent.addChild(rightLittleFingerTip)
       content.add(trailContent)
 
-      trails.append(try! await Trail(rootEntity: trailContent, anchor: rightThumbTip, color: SIMD3<Float>(0.5, 0.7, 0.5)))
-      trails.append(try! await Trail(rootEntity: trailContent, anchor: rightIndexFingerTip, color: SIMD3<Float>(1, 0.6, 1)))
-      trails.append(try! await Trail(rootEntity: trailContent, anchor: rightMiddleFingerTip, color: SIMD3<Float>(0.6, 0.8, 1.5)))
-      trails.append(try! await Trail(rootEntity: trailContent, anchor: rightRingFingerTip, color: SIMD3<Float>(1.5, 0.7, 0.7)))
-      trails.append(try! await Trail(rootEntity: trailContent, anchor: rightLittleFingerTip, color: SIMD3<Float>(1.2, 0.8, 0.5)))
+      trails.append(try! await Trail(rootEntity: trailContent, palm: palm, anchor: rightThumbTip, color: SIMD3<Float>(0.5, 0.7, 0.5)))
+      trails.append(try! await Trail(rootEntity: trailContent, palm: palm, anchor: rightIndexFingerTip, color: SIMD3<Float>(1, 0.6, 1)))
+      trails.append(try! await Trail(rootEntity: trailContent, palm: palm, anchor: rightMiddleFingerTip, color: SIMD3<Float>(0.6, 0.8, 1.5)))
+      trails.append(try! await Trail(rootEntity: trailContent, palm: palm, anchor: rightRingFingerTip, color: SIMD3<Float>(1.5, 0.7, 0.7)))
+      trails.append(try! await Trail(rootEntity: trailContent, palm: palm, anchor: rightLittleFingerTip, color: SIMD3<Float>(1.2, 0.8, 0.5)))
     } update: { content, attachments in
     } attachments: {
       Attachment(id: "ButtonView") {
@@ -69,7 +71,7 @@ struct ImmersiveView: View {
       }
     }
     .task {
-      _ = await session.run(SpatialTrackingSession.Configuration(tracking: [.hand]))
+      _ = await session.run(SpatialTrackingSession.Configuration(tracking: [.hand, .world]))
 //      if let buttonEntity {
 //        // Project fingertip coordinates onto the button surface
 //        buttonProjection = (buttonEntity.transform.matrix.inverse * SIMD4<Float>(finger.x, finger.y, finger.z, 1)).xyz

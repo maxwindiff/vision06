@@ -3,7 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>NSHandsTrackingUsageDescription</key>
-	<string>For recording hand position</string>
+	<string>For tracking hand position</string>
+	<key>NSWorldSensingUsageDescription</key>
+	<string>For tracking head position</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationPreferredDefaultSceneSessionRole</key>
