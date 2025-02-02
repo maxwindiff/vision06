@@ -45,7 +45,7 @@ class TrailSystem: System {
 }
 
 public class Trail {
-  let rightFingerTip = AnchorEntity(.hand(.right, location: .indexFingerTip))
+  let anchor: Entity
   let startDate: Date
   var lastPoint: SIMD3<Float> = .zero
   var count: Int = 0
@@ -61,10 +61,10 @@ public class Trail {
   }
 
   @MainActor
-  init(rootEntity: Entity) async throws {
+  init(rootEntity: Entity, anchor: Entity, color: SIMD3<Float>) async throws {
     // Input
+    self.anchor = anchor
     startDate = Date.now
-    rootEntity.addChild(rightFingerTip)
 
     // Output
     extruder = CurveExtruder(shape: makeCircle(radius: 1, segmentCount: Int(4)), radius: 0.0001, fadeTime: 0.5)
@@ -79,6 +79,7 @@ public class Trail {
                                                    in: realityKitContentBundle)
     try bloomMaterial.setParameter(name: "FadeOutBegin", value: .float(0.25))
     try bloomMaterial.setParameter(name: "FadeOutComplete", value: .float(0.5))
+    try bloomMaterial.setParameter(name: "Color", value: .simd3Float(color))
     try bloomMaterial.setParameter(name: "Width", value: .float(0.005))
 
     let trailEntity = Entity()
@@ -95,7 +96,7 @@ public class Trail {
     count += 1
     // if count > 1000 { return } // for debugging
 
-    let input = rightFingerTip.position(relativeTo: nil)
+    let input = anchor.position(relativeTo: nil)
     if input.x == 0 && input.y == 0 {
       // Sometimes the position reports (0, 0, something) at startup, ignore it.
       return

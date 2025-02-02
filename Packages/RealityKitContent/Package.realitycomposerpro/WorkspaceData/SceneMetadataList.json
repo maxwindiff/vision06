@@ -25,6 +25,16 @@
       [
         "3FD56334-70E6-4412-9C99-77D4F8FBC44D",
         "Root",
+        "CoreMaterial",
+        "TimeBasedFade"
+      ],
+      {
+        "isExpanded" : true,
+        "isLocked" : false
+      },
+      [
+        "3FD56334-70E6-4412-9C99-77D4F8FBC44D",
+        "Root",
         "CoreMaterial"
       ],
       {
