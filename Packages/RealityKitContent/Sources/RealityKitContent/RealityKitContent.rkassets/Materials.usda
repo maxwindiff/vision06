@@ -10,9 +10,10 @@
 
 def Xform "Root"
 {
-    def Material "Material"
+    reorder nameChildren = ["BloomMaterial", "TimeBasedFade", "TrailMaterial"]
+    def Material "BloomMaterial"
     {
-        reorder nameChildren = ["Multiply", "Separate2_1", "TextureCoordinates", "SmoothStep", "Subtract_1", "UnlitSurface", "GeometryModifier", "ConstantColor3", "VertexOffset"]
+        reorder nameChildren = ["Multiply", "TextureCoordinates", "Combine3", "Power", "Multiply_1", "Exp", "Multiply_2", "Multiply_3", "Ramp4Corners", "CrossProduct", "ConvertToVector3f", "ViewDirection", "Direction", "Magnitude", "Group", "CurveDistance", "Multiply_4", "CurvatureFade", "Group2", "DebugUV", "Group3", "Extract", "Subtract", "Multiply_5", "Group4", "RibbonOffsets", "UnlitSurface", "GeometryModifier", "TimeBasedFade"]
         float inputs:Width = 0.1 (
             customData = {
                 dictionary realitykit = {
@@ -21,16 +22,16 @@ def Xform "Root"
                 }
             }
         )
-        token outputs:mtlx:surface.connect = </Root/Material/UnlitSurface.outputs:out>
-        token outputs:realitykit:vertex.connect = </Root/Material/GeometryModifier.outputs:out>
+        token outputs:mtlx:surface.connect = </Root/BloomMaterial/UnlitSurface.outputs:out>
+        token outputs:realitykit:vertex.connect = </Root/BloomMaterial/GeometryModifier.outputs:out>
         float2 ui:nodegraph:realitykit:subgraphOutputs:pos = (2468.3345, 472.0161)
         int ui:nodegraph:realitykit:subgraphOutputs:stackingOrder = 632
 
         def Shader "Multiply"
         {
             uniform token info:id = "ND_multiply_color3FA"
-            color3f inputs:in1.connect = </Root/Material/Combine3.outputs:out>
-            float inputs:in2.connect = </Root/Material/TimeBasedFade.outputs:SmoothStep_out>
+            color3f inputs:in1.connect = </Root/BloomMaterial/Combine3.outputs:out>
+            float inputs:in2.connect = </Root/BloomMaterial/TimeBasedFade.outputs:SmoothStep_out>
             color3f outputs:out
             float2 ui:nodegraph:node:pos = (1654.0845, 197.71289)
             int ui:nodegraph:node:stackingOrder = 2073
@@ -43,7 +44,7 @@ def Xform "Root"
             color3f inputs:color = (0, 0.10115683, 1) (
                 colorSpace = "srgb_displayp3"
             )
-            color3f inputs:color.connect = </Root/Material/Multiply_4.outputs:out>
+            color3f inputs:color.connect = </Root/BloomMaterial/Multiply_4.outputs:out>
             bool inputs:hasPremultipliedAlpha = 1
             float inputs:opacity = 0
             float inputs:opacity.connect = None
@@ -59,7 +60,7 @@ def Xform "Root"
             uniform token info:id = "ND_realitykit_geometrymodifier_2_0_vertexshader"
             float3 inputs:bitangent
             color4f inputs:color
-            float3 inputs:modelPositionOffset.connect = </Root/Material/Multiply_2.outputs:out>
+            float3 inputs:modelPositionOffset.connect = </Root/BloomMaterial/Multiply_2.outputs:out>
             float3 inputs:normal
             float2 inputs:uv0
             float2 inputs:uv1
@@ -86,11 +87,11 @@ def Xform "Root"
         def Shader "Combine3"
         {
             uniform token info:id = "ND_combine3_color3"
-            float inputs:in1.connect = </Root/Material/Exp.outputs:out>
+            float inputs:in1.connect = </Root/BloomMaterial/Exp.outputs:out>
             float inputs:in2 = 0.5
-            float inputs:in2.connect = </Root/Material/Exp.outputs:out>
+            float inputs:in2.connect = </Root/BloomMaterial/Exp.outputs:out>
             float inputs:in3 = 0.5
-            float inputs:in3.connect = </Root/Material/Exp.outputs:out>
+            float inputs:in3.connect = </Root/BloomMaterial/Exp.outputs:out>
             color3f outputs:out
             float2 ui:nodegraph:node:pos = (1333.7708, 158.9961)
             int ui:nodegraph:node:stackingOrder = 2564
@@ -99,7 +100,7 @@ def Xform "Root"
         def Shader "Power"
         {
             uniform token info:id = "ND_power_float"
-            float inputs:in1.connect = </Root/Material/Subtract.outputs:out>
+            float inputs:in1.connect = </Root/BloomMaterial/Subtract.outputs:out>
             float inputs:in2 = 2
             float inputs:in2.connect = None
             float outputs:out
@@ -110,7 +111,7 @@ def Xform "Root"
         def Shader "Multiply_1"
         {
             uniform token info:id = "ND_multiply_float"
-            float inputs:in1.connect = </Root/Material/Power.outputs:out>
+            float inputs:in1.connect = </Root/BloomMaterial/Power.outputs:out>
             float inputs:in2 = -100
             float outputs:out
             float2 ui:nodegraph:node:pos = (931.5039, 325.33984)
@@ -121,7 +122,7 @@ def Xform "Root"
         def Shader "Exp"
         {
             uniform token info:id = "ND_exp_float"
-            float inputs:in.connect = </Root/Material/Multiply_1.outputs:out>
+            float inputs:in.connect = </Root/BloomMaterial/Multiply_1.outputs:out>
             float outputs:out
             float2 ui:nodegraph:node:pos = (1099.8359, 322.23438)
             int ui:nodegraph:node:stackingOrder = 2426
@@ -130,9 +131,9 @@ def Xform "Root"
         def Shader "Multiply_2"
         {
             uniform token info:id = "ND_multiply_vector3FA"
-            float3 inputs:in1.connect = </Root/Material/RibbonOffsets.outputs:Multiply_2_out>
+            float3 inputs:in1.connect = </Root/BloomMaterial/RibbonOffsets.outputs:Multiply_2_out>
             float inputs:in2 = 0.02
-            float inputs:in2.connect = </Root/Material.inputs:Width>
+            float inputs:in2.connect = </Root/BloomMaterial.inputs:Width>
             float3 outputs:out
             float2 ui:nodegraph:node:pos = (1975.5845, 763.6172)
             int ui:nodegraph:node:stackingOrder = 1463
@@ -141,9 +142,9 @@ def Xform "Root"
         def Shader "Multiply_3"
         {
             uniform token info:id = "ND_multiply_color3FA"
-            color3f inputs:in1.connect = </Root/Material/Multiply.outputs:out>
+            color3f inputs:in1.connect = </Root/BloomMaterial/Multiply.outputs:out>
             float inputs:in2 = 0.8
-            float inputs:in2.connect = </Root/Material/Magnitude.outputs:out>
+            float inputs:in2.connect = </Root/BloomMaterial/Magnitude.outputs:out>
             color3f outputs:out
             float2 ui:nodegraph:node:pos = (1814.8345, 325.91504)
             int ui:nodegraph:node:stackingOrder = 1706
@@ -152,7 +153,7 @@ def Xform "Root"
         def Shader "Ramp4Corners"
         {
             uniform token info:id = "ND_ramp4_color3"
-            float2 inputs:texcoord.connect = </Root/Material/DebugUV.outputs:out>
+            float2 inputs:texcoord.connect = </Root/BloomMaterial/DebugUV.outputs:out>
             color3f inputs:valuebl = (0.00015001126, 1, 0.011297116) (
                 colorSpace = "srgb_texture"
             )
@@ -173,8 +174,8 @@ def Xform "Root"
         def Shader "CrossProduct"
         {
             uniform token info:id = "ND_crossproduct_vector3"
-            float3 inputs:in1.connect = </Root/Material/ViewDirection.outputs:out>
-            float3 inputs:in2.connect = </Root/Material/ConvertToVector3f.outputs:out>
+            float3 inputs:in1.connect = </Root/BloomMaterial/ViewDirection.outputs:out>
+            float3 inputs:in2.connect = </Root/BloomMaterial/ConvertToVector3f.outputs:out>
             float3 outputs:out
             float2 ui:nodegraph:node:pos = (1268.1602, 599.0625)
             int ui:nodegraph:node:stackingOrder = 1691
@@ -183,7 +184,7 @@ def Xform "Root"
         def Shader "ConvertToVector3f"
         {
             uniform token info:id = "ND_convert_color3_vector3"
-            color3f inputs:in.connect = </Root/Material/Direction.outputs:out>
+            color3f inputs:in.connect = </Root/BloomMaterial/Direction.outputs:out>
             float3 outputs:out
             float2 ui:nodegraph:node:pos = (1020.84766, 632.8047)
             int ui:nodegraph:node:stackingOrder = 1691
@@ -210,7 +211,7 @@ def Xform "Root"
         def Shader "Magnitude"
         {
             uniform token info:id = "ND_magnitude_vector3"
-            float3 inputs:in.connect = </Root/Material/CrossProduct.outputs:out>
+            float3 inputs:in.connect = </Root/BloomMaterial/CrossProduct.outputs:out>
             float outputs:out
             float2 ui:nodegraph:node:pos = (1473.0845, 597.9342)
             int ui:nodegraph:node:stackingOrder = 2558
@@ -237,8 +238,8 @@ def Xform "Root"
         def Shader "Multiply_4"
         {
             uniform token info:id = "ND_multiply_color3FA"
-            prepend color3f inputs:in1.connect = </Root/Material/Multiply_3.outputs:out>
-            float inputs:in2.connect = </Root/Material/Multiply_5.outputs:out>
+            color3f inputs:in1.connect = </Root/BloomMaterial/Multiply_3.outputs:out>
+            float inputs:in2.connect = </Root/BloomMaterial/Multiply_5.outputs:out>
             color3f outputs:out
             float2 ui:nodegraph:node:pos = (1975.5845, 460.0161)
             int ui:nodegraph:node:stackingOrder = 1709
@@ -247,7 +248,7 @@ def Xform "Root"
         def Shader "CurvatureFade"
         {
             uniform token info:id = "ND_extract_vector2"
-            float2 inputs:in.connect = </Root/Material/CurveDistance.outputs:out>
+            float2 inputs:in.connect = </Root/BloomMaterial/CurveDistance.outputs:out>
             int inputs:index = 1
             float outputs:out
             float2 ui:nodegraph:node:pos = (1198.412, 818.7975)
@@ -283,7 +284,7 @@ def Xform "Root"
         def Shader "Extract"
         {
             uniform token info:id = "ND_extract_vector2"
-            float2 inputs:in.connect = </Root/Material/TextureCoordinates.outputs:out>
+            float2 inputs:in.connect = </Root/BloomMaterial/TextureCoordinates.outputs:out>
             float outputs:out
             float2 ui:nodegraph:node:pos = (904.14905, 219.52866)
             int ui:nodegraph:node:stackingOrder = 2430
@@ -292,7 +293,7 @@ def Xform "Root"
         def Shader "Subtract"
         {
             uniform token info:id = "ND_subtract_float"
-            float inputs:in1.connect = </Root/Material/Extract.outputs:out>
+            float inputs:in1.connect = </Root/BloomMaterial/Extract.outputs:out>
             float inputs:in2 = 0.5
             float outputs:out
             float2 ui:nodegraph:node:pos = (1059.7181, 224.13458)
@@ -302,7 +303,7 @@ def Xform "Root"
         def Shader "Multiply_5"
         {
             uniform token info:id = "ND_multiply_float"
-            float inputs:in1.connect = </Root/Material/CurvatureFade.outputs:out>
+            float inputs:in1.connect = </Root/BloomMaterial/CurvatureFade.outputs:out>
             float inputs:in2 = 2
             float outputs:out
             float2 ui:nodegraph:node:pos = (1369.9453, 814.2661)
@@ -318,76 +319,10 @@ def Xform "Root"
             string[] ui:group:members = ["p:Exp", "p:TextureCoordinates", "p:Multiply_1", "p:Power", "p:Extract", "p:Subtract"]
         }
 
-        def NodeGraph "TimeBasedFade"
-        {
-            float inputs:DelaySeconds = 0.1 (
-                customData = {
-                    dictionary realitykit = {
-                        float2 positionInSubgraph = (293.67578, 228.02344)
-                        int stackingOrderInSubgraph = 1035
-                    }
-                }
-            )
-            prepend float outputs:SmoothStep_out.connect = </Root/Material/TimeBasedFade/SmoothStep.outputs:out>
-            float2 ui:nodegraph:node:pos = (1348.72, 351.1211)
-            int ui:nodegraph:node:stackingOrder = 2566
-            float2 ui:nodegraph:realitykit:subgraphOutputs:pos = (875.75, 73.5)
-
-            def Shader "SmoothStep"
-            {
-                uniform token info:id = "ND_smoothstep_float"
-                float inputs:high = 0.6
-                float inputs:in.connect = </Root/Material/TimeBasedFade/Add.outputs:out>
-                float inputs:low = 0.9
-                float outputs:out
-                float2 ui:nodegraph:node:pos = (669.75, 73.5)
-                int ui:nodegraph:node:stackingOrder = 1026
-            }
-
-            def Shader "TextureCoordinates"
-            {
-                uniform token info:id = "ND_texcoord_vector2"
-                int inputs:index = 2
-                float2 outputs:out
-                float2 ui:nodegraph:node:pos = (48.79297, 69.875)
-                int ui:nodegraph:node:stackingOrder = 1024
-            }
-
-            def Shader "Subtract_1"
-            {
-                uniform token info:id = "ND_subtract_float"
-                float inputs:in1.connect = </Root/Material/TimeBasedFade/Separate2.outputs:outy>
-                float inputs:in2.connect = </Root/Material/TimeBasedFade/Separate2.outputs:outx>
-                float outputs:out
-                float2 ui:nodegraph:node:pos = (463.72266, 72.55078)
-                int ui:nodegraph:node:stackingOrder = 1032
-            }
-
-            def Shader "Separate2"
-            {
-                uniform token info:id = "ND_separate2_vector2"
-                float2 inputs:in.connect = </Root/Material/TimeBasedFade/TextureCoordinates.outputs:out>
-                float outputs:outx
-                float outputs:outy
-                float2 ui:nodegraph:node:pos = (313.46094, 69.69922)
-                int ui:nodegraph:node:stackingOrder = 1028
-            }
-
-            def Shader "Add"
-            {
-                uniform token info:id = "ND_add_float"
-                float inputs:in1.connect = </Root/Material/TimeBasedFade/Subtract_1.outputs:out>
-                float inputs:in2.connect = </Root/Material/TimeBasedFade.inputs:DelaySeconds>
-                float outputs:out
-                float2 ui:nodegraph:node:pos = (512.39453, 209.60938)
-                int ui:nodegraph:node:stackingOrder = 1033
-            }
-        }
-
         def NodeGraph "RibbonOffsets"
         {
             reorder nameChildren = ["ViewDirection", "Normalize", "CrossProduct", "Multiply_1", "TextureCoordinates", "Separate2", "Multiply_2", "Direction", "ConvertToVector3f"]
-            float3 outputs:Multiply_2_out.connect = </Root/Material/RibbonOffsets/Multiply_2.outputs:out>
+            float3 outputs:Multiply_2_out.connect = </Root/BloomMaterial/RibbonOffsets/Multiply_2.outputs:out>
             float2 ui:nodegraph:node:pos = (1814.8345, 733.6172)
             int ui:nodegraph:node:stackingOrder = 2556
             string[] ui:nodegraph:realitykit:node:attributesShowingChildren = ["outputs:Multiply_2_out"]
@@ -405,8 +340,8 @@ def Xform "Root"
             def Shader "CrossProduct"
             {
                 uniform token info:id = "ND_crossproduct_vector3"
-                float3 inputs:in1.connect = </Root/Material/RibbonOffsets/ViewDirection.outputs:out>
-                float3 inputs:in2.connect = </Root/Material/RibbonOffsets/ConvertToVector3f.outputs:out>
+                float3 inputs:in1.connect = </Root/BloomMaterial/RibbonOffsets/ViewDirection.outputs:out>
+                float3 inputs:in2.connect = </Root/BloomMaterial/RibbonOffsets/ConvertToVector3f.outputs:out>
                 float3 outputs:out
                 float2 ui:nodegraph:node:pos = (855, 200)
                 int ui:nodegraph:node:stackingOrder = 1443
@@ -415,8 +350,8 @@ def Xform "Root"
             def Shader "Multiply_2"
             {
                 uniform token info:id = "ND_multiply_vector3FA"
-                float3 inputs:in1.connect = </Root/Material/RibbonOffsets/CrossProduct.outputs:out>
-                float inputs:in2.connect = </Root/Material/RibbonOffsets/Subtract.outputs:out>
+                float3 inputs:in1.connect = </Root/BloomMaterial/RibbonOffsets/CrossProduct.outputs:out>
+                float inputs:in2.connect = </Root/BloomMaterial/RibbonOffsets/Subtract.outputs:out>
                 float3 outputs:out
                 float2 ui:nodegraph:node:pos = (1074.8555, 208.92969)
                 int ui:nodegraph:node:stackingOrder = 1348
@@ -434,7 +369,7 @@ def Xform "Root"
             def Shader "ConvertToVector3f"
             {
                 uniform token info:id = "ND_convert_color3_vector3"
-                color3f inputs:in.connect = </Root/Material/RibbonOffsets/Direction.outputs:out>
+                color3f inputs:in.connect = </Root/BloomMaterial/RibbonOffsets/Direction.outputs:out>
                 float3 outputs:out
                 float2 ui:nodegraph:node:pos = (612.3633, 271.1328)
                 int ui:nodegraph:node:stackingOrder = 1447
@@ -444,7 +379,7 @@ def Xform "Root"
             def Shader "Extract"
             {
                 uniform token info:id = "ND_extract_vector2"
-                float2 inputs:in.connect = </Root/Material/RibbonOffsets/VertexOffset.outputs:out>
+                float2 inputs:in.connect = </Root/BloomMaterial/RibbonOffsets/VertexOffset.outputs:out>
                 float outputs:out
                 float2 ui:nodegraph:node:pos = (512.28516, 466.85547)
                 int ui:nodegraph:node:stackingOrder = 1444
@@ -461,12 +396,182 @@ def Xform "Root"
             def Shader "Subtract"
             {
                 uniform token info:id = "ND_subtract_float"
-                float inputs:in1.connect = </Root/Material/RibbonOffsets/Extract.outputs:out>
+                float inputs:in1.connect = </Root/BloomMaterial/RibbonOffsets/Extract.outputs:out>
                 float inputs:in2 = 0.5
                 float outputs:out
                 float2 ui:nodegraph:node:pos = (702.0781, 471.98438)
                 int ui:nodegraph:node:stackingOrder = 1380
             }
+        }
+
+        def "TimeBasedFade" (
+            active = true
+            instanceable = true
+            references = </Root/TimeBasedFade>
+        )
+        {
+            float inputs:DelaySeconds = 0
+            float2 ui:nodegraph:node:pos = (1368.72, 371.1211)
+            int ui:nodegraph:node:stackingOrder = 2575
+        }
+    }
+
+    def NodeGraph "TimeBasedFade"
+    {
+        float inputs:DelaySeconds = 0 (
+            customData = {
+                dictionary realitykit = {
+                    float2 positionInSubgraph = (554.25, 188)
+                    int stackingOrderInSubgraph = 1034
+                }
+            }
+        )
+        float outputs:SmoothStep_out.connect = </Root/TimeBasedFade/SmoothStep.outputs:out>
+        float2 ui:nodegraph:node:pos = (1348.72, 351.1211)
+        int ui:nodegraph:node:stackingOrder = 2566
+        float2 ui:nodegraph:realitykit:subgraphOutputs:pos = (1079.75, 85)
+
+        def Shader "SmoothStep"
+        {
+            uniform token info:id = "ND_smoothstep_float"
+            float inputs:high = 0.6
+            float inputs:in.connect = </Root/TimeBasedFade/Subtract.outputs:out>
+            float inputs:low = 0.9
+            float outputs:out
+            float2 ui:nodegraph:node:pos = (873.75, 85)
+            int ui:nodegraph:node:stackingOrder = 1026
+        }
+
+        def Shader "TextureCoordinates"
+        {
+            uniform token info:id = "ND_texcoord_vector2"
+            int inputs:index = 2
+            float2 outputs:out
+            float2 ui:nodegraph:node:pos = (103.5, 27.5)
+            int ui:nodegraph:node:stackingOrder = 1024
+        }
+
+        def Shader "Subtract_1"
+        {
+            uniform token info:id = "ND_subtract_float"
+            float inputs:in1.connect = </Root/TimeBasedFade/Separate2.outputs:outy>
+            float inputs:in2.connect = </Root/TimeBasedFade/Separate2.outputs:outx>
+            float outputs:out
+            float2 ui:nodegraph:node:pos = (554.25, 27.5)
+            int ui:nodegraph:node:stackingOrder = 1032
+        }
+
+        def Shader "Separate2"
+        {
+            uniform token info:id = "ND_separate2_vector2"
+            float2 inputs:in.connect = </Root/TimeBasedFade/TextureCoordinates.outputs:out>
+            float outputs:outx
+            float outputs:outy
+            float2 ui:nodegraph:node:pos = (341.5, 27.5)
+            int ui:nodegraph:node:stackingOrder = 1028
+        }
+
+        def Shader "Subtract"
+        {
+            uniform token info:id = "ND_subtract_float"
+            float inputs:in1.connect = </Root/TimeBasedFade/Subtract_1.outputs:out>
+            float inputs:in2.connect = </Root/TimeBasedFade.inputs:DelaySeconds>
+            float outputs:out
+            float2 ui:nodegraph:node:pos = (721.25, 85)
+            int ui:nodegraph:node:stackingOrder = 1037
+        }
+    }
+
+    def Material "TrailMaterial"
+    {
+        reorder nameChildren = ["Separate2_1", "Subtract_1", "SmoothStep", "HSVToRGB", "Multiply", "TextureCoordinates", "Combine3", "UnlitSurface", "TimeBasedFade"]
+        token outputs:mtlx:surface.connect = </Root/TrailMaterial/UnlitSurface.outputs:out>
+        token outputs:realitykit:vertex
+        float2 ui:nodegraph:realitykit:subgraphOutputs:pos = (1493.25, 91.5)
+        int ui:nodegraph:realitykit:subgraphOutputs:stackingOrder = 797
+
+        def Shader "Subtract_1"
+        {
+            uniform token info:id = "ND_subtract_float"
+            float inputs:in1.connect = </Root/TrailMaterial/Separate2.outputs:outy>
+            float inputs:in2.connect = </Root/TrailMaterial/Separate2.outputs:outx>
+            float outputs:out
+            float2 ui:nodegraph:node:pos = (517.25, 107)
+            int ui:nodegraph:node:stackingOrder = 795
+        }
+
+        def Shader "HSVToRGB"
+        {
+            uniform token info:id = "ND_hsvtorgb_color3"
+            color3f inputs:in.connect = </Root/TrailMaterial/Combine3.outputs:out>
+            color3f outputs:out
+            float2 ui:nodegraph:node:pos = (889.25, 61.5)
+            int ui:nodegraph:node:stackingOrder = 795
+        }
+
+        def Shader "Multiply"
+        {
+            uniform token info:id = "ND_multiply_color3FA"
+            color3f inputs:in1.connect = </Root/TrailMaterial/HSVToRGB.outputs:out>
+            float inputs:in2.connect = </Root/TrailMaterial/TimeBasedFade.outputs:SmoothStep_out>
+            color3f outputs:out
+            float2 ui:nodegraph:node:pos = (1055.5, 91.5)
+            int ui:nodegraph:node:stackingOrder = 795
+        }
+
+        def Shader "TextureCoordinates"
+        {
+            uniform token info:id = "ND_texcoord_vector2"
+            int inputs:index = 2
+            float2 outputs:out
+            float2 ui:nodegraph:node:pos = (103.5, 107)
+            int ui:nodegraph:node:stackingOrder = 795
+        }
+
+        def Shader "Combine3"
+        {
+            uniform token info:id = "ND_combine3_color3"
+            float inputs:in1 = 0.22
+            float inputs:in1.connect = </Root/TrailMaterial/Subtract_1.outputs:out>
+            float inputs:in2 = 0.6
+            float inputs:in3 = 0.8
+            color3f outputs:out
+            float2 ui:nodegraph:node:pos = (678.5, 61.5)
+            int ui:nodegraph:node:stackingOrder = 2573
+            string[] ui:nodegraph:realitykit:node:attributesShowingChildren = []
+        }
+
+        def Shader "UnlitSurface"
+        {
+            uniform token info:id = "ND_realitykit_unlit_surfaceshader"
+            bool inputs:applyPostProcessToneMap = 0
+            color3f inputs:color.connect = </Root/TrailMaterial/Multiply.outputs:out>
+            bool inputs:hasPremultipliedAlpha = 1
+            float inputs:opacity = 0
+            token outputs:out
+            float2 ui:nodegraph:node:pos = (1244.25, 91.5)
+            int ui:nodegraph:node:stackingOrder = 800
+        }
+
+        def "TimeBasedFade" (
+            active = true
+            instanceable = true
+            references = </Root/TimeBasedFade>
+        )
+        {
+            float inputs:DelaySeconds
+            float2 ui:nodegraph:node:pos = (845.0781, 218.92188)
+            int ui:nodegraph:node:stackingOrder = 2569
+        }
+
+        def Shader "Separate2"
+        {
+            uniform token info:id = "ND_separate2_vector2"
+            float2 inputs:in.connect = </Root/TrailMaterial/TextureCoordinates.outputs:out>
+            float outputs:outx
+            float outputs:outy
+            float2 ui:nodegraph:node:pos = (347.75, 107)
+            int ui:nodegraph:node:stackingOrder = 2571
         }
     }
 }

@@ -69,11 +69,11 @@ public class Trail {
     // Output
     extruder = CurveExtruder(shape: makeCircle(radius: 1, segmentCount: Int(4)), radius: 0.0004, fadeTime: 1.0)
     smoothCurveSampler = SmoothCurveSampler(flatness: 0.001, extruder: extruder)
-    trailMaterial = try await ShaderGraphMaterial(named: "/Root/Material",
-                                                   from: "FluxMaterial",
+    trailMaterial = try await ShaderGraphMaterial(named: "/Root/TrailMaterial",
+                                                   from: "Materials",
                                                    in: realityKitContentBundle)
-    bloomMaterial = try await ShaderGraphMaterial(named: "/Root/Material",
-                                                   from: "BloomMaterial",
+    bloomMaterial = try await ShaderGraphMaterial(named: "/Root/BloomMaterial",
+                                                   from: "Materials",
                                                    in: realityKitContentBundle)
     try bloomMaterial.setParameter(name: "Width", value: .float(0.005))
 

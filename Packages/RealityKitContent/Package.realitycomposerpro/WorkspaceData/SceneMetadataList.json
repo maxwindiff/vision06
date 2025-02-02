@@ -108,6 +108,24 @@
     "objectMetadataList" : [
       [
         "B8AE3C2A-F5F0-470C-8EB0-3D593EBE495A",
+        "Root",
+        "TimeBasedFade"
+      ],
+      {
+        "isExpanded" : true,
+        "isLocked" : false
+      },
+      [
+        "B8AE3C2A-F5F0-470C-8EB0-3D593EBE495A",
+        "Root",
+        "BloomMaterial"
+      ],
+      {
+        "isExpanded" : true,
+        "isLocked" : false
+      },
+      [
+        "B8AE3C2A-F5F0-470C-8EB0-3D593EBE495A",
         "Root"
       ],
       {
@@ -117,7 +135,7 @@
       [
         "B8AE3C2A-F5F0-470C-8EB0-3D593EBE495A",
         "Root",
-        "Material"
+        "TrailMaterial"
       ],
       {
         "isExpanded" : true,
